@@ -1,0 +1,14 @@
+Source: aayushi-code
+Section: editors
+Priority: optional
+Maintainer: Aayushi Code Project <aayushi-code@example.com>
+Package: aayushi-code
+Version: @VERSION@
+Architecture: @ARCH@
+Depends: libc6 (>= 2.31)
+Recommends: fonts-noto-core
+Description: Aayushi Code - a lightweight, ultra-fast code editor
+ Aayushi Code is a free and open-source text editor written in Lua, on top
+ of a small C core using the SDL library. A fork of Lite XL, it bundles
+ language servers, syntax highlighting and web development tooling for many
+ programming languages out of the box.

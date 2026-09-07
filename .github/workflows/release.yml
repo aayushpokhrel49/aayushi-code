@@ -1,0 +1,125 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  linux:
+    name: Linux (${{ matrix.distro }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [deb, rpm, arch, appimage]
+    env:
+      SDL3_VERSION: "3.2.8"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y meson ninja-build gcc pkg-config \
+            libcurl4-openssl-dev curl ca-certificates cmake \
+            dpkg-dev rpm python3 zstd rsync
+
+      - name: Build portable tree
+        run: ./scripts/build.sh --portable --forcefallback
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          ./scripts/package-linux.sh ${{ matrix.distro }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.distro }}
+          path: dist/*
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    env:
+      SDL3_VERSION: "3.2.8"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: brew install meson ninja cmake curl
+
+      - name: Build and package
+        run: |
+          ./scripts/build.sh --bundle --forcefallback
+          ./scripts/package-macos.sh --dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: dist/*
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      SDL3_VERSION: "3.2.8"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-meson
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-curl
+            mingw-w64-x86_64-zstd
+            tar zip wget
+
+      - name: Install Inno Setup
+        shell: bash
+        run: choco install innosetup -y --no-progress
+
+      - name: Build and package
+        run: |
+          ./scripts/build.sh --portable --forcefallback
+          ./scripts/package-windows.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/*
+
+  publish:
+    name: Publish release
+    needs: [linux, macos, windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**
+          generate_release_notes: true

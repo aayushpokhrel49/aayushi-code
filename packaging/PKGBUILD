@@ -1,0 +1,26 @@
+# Maintainer: Aayushi Code Project <aayushi-code@example.com>
+# Build from a release tarball, or use scripts/package-linux.sh for a
+# prebuilt package. PKGBUILD-build requires SDL3 development files.
+
+pkgname=aayushi-code
+pkgver=2.1.7
+pkgrel=1
+pkgdesc="A lightweight, ultra-fast code editor written in Lua, with bundled language servers"
+arch=('x86_64')
+url="https://example.com/aayushi-code"
+license=('MIT')
+depends=('glibc')
+makedepends=('meson' 'ninja' 'pkgconf')
+sha256sums=('SKIP')
+
+build() {
+  meson setup build \
+    --prefix=/usr \
+    --buildtype=release \
+    -Dbundle_plugins=
+  meson compile -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" meson install -C build --no-rebuild
+}

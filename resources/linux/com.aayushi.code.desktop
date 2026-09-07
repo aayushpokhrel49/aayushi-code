@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Aayushi Code
+Comment=Aayushi Code - A lightweight text editor
+Exec=aayushi-code %F
+Icon=aayushi-code
+Terminal=false
+StartupWMClass=com.aayushi.code
+Categories=Development;IDE;
+MimeType=text/plain;inode/directory;

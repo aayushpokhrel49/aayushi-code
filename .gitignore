@@ -1,0 +1,57 @@
+build*/
+.build*/
+lhelper/
+submodules/
+subprojects/*/
+/appimage*
+.vscode
+.cache
+.ccls-cache
+.lite-debug.log
+.run*
+*.diff
+*.exe
+*.tar.gz
+*.tar.xz
+*.zip
+*.DS_Store
+*App*
+compile_commands.json
+error.txt
+lite-xl*
+LiteXL*
+aayushi-code*
+Lite XL.app
+Aayushi Code.app
+
+# packaging artifacts
+/dist/
+
+# Linux packages
+*.deb
+*.rpm
+*.dmg
+*.pkg.tar.zst
+*.pkg.tar.xz
+*.AppImage
+
+# AppImage build dirs
+/LiteXL.AppDir/
+/AayushiCode.AppDir/
+
+# LSP server plugin binaries (downloaded via lpm on first launch instead)
+data/plugins/lsp_c/
+data/plugins/lsp_rust/
+data/plugins/lsp_web/
+data/plugins/lsp_typescript/
+data/plugins/lsp_python/
+data/plugins/lsp_lua/
+
+!resources/windows/*.diff
+!resources/windows/*.exe.manifest.in
+!resources/macos/*.py
+data/
+!data/
+!data/plugins/
+!data/plugins/firstrun/
+
