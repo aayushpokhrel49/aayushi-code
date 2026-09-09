@@ -22,7 +22,8 @@ compile_commands.json
 error.txt
 lite-xl*
 LiteXL*
-aayushi-code*
+/aayushi-code
+/aayushi-code.exe
 Lite XL.app
 Aayushi Code.app
 

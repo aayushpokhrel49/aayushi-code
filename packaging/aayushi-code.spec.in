@@ -1,0 +1,31 @@
+Name:           aayushi-code
+Version:        @VERSION@
+Release:        1%{?dist}
+Summary:        Aayushi Code - a lightweight, ultra-fast code editor
+License:        MIT
+URL:            https://example.com/aayushi-code
+Source0:        %{name}-%{version}.tar.gz
+
+%description
+Aayushi Code is a free and open-source text editor written in Lua, on top of
+a small C core using the SDL library. A fork of Lite XL, it bundles language
+servers, syntax highlighting and web development tooling for many programming
+languages out of the box.
+
+%prep
+%setup -q -n %{name}-%{version}
+
+%install
+rm -rf %{buildroot}
+mkdir -p %{buildroot}
+cp -a usr %{buildroot}/usr
+
+%files
+%{_bindir}/aayushi-code
+%{_datadir}/aayushi-code/*
+%{_datadir}/applications/com.aayushi.code.desktop
+%{_datadir}/icons/hicolor/scalable/apps/aayushi-code.svg
+%{_datadir}/metainfo/com.aayushi.code.metainfo.xml
+%{_docdir}/aayushi-code/licenses.md
+
+%changelog
