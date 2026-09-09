@@ -36,7 +36,10 @@ jobs:
           sudo apt-get install -y \
             meson ninja-build gcc pkg-config \
             libcurl4-openssl-dev curl ca-certificates cmake \
-            dpkg-dev rpm python3 zstd rsync wget
+            dpkg-dev rpm python3 zstd rsync wget \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxi-dev libxfixes-dev libxrender-dev libxss-dev \
+            libwayland-dev wayland-protocols
 
       - name: Build portable tree
         run: ./scripts/build.sh --portable --forcefallback

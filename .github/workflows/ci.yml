@@ -39,7 +39,10 @@ jobs:
           sudo apt-get install -y \
             meson ninja-build gcc pkg-config \
             libcurl4-openssl-dev curl ca-certificates cmake \
-            zlib1g-dev python3
+            zlib1g-dev python3 rsync \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxi-dev libxfixes-dev libxrender-dev libxss-dev \
+            libwayland-dev wayland-protocols
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
