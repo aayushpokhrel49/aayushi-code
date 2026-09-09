@@ -64,7 +64,7 @@ generate_appimage() {
   rm -rf "$appdir"
 
   echo "Creating $appdir..."
-  mkdir -p "$appdir/usr/bin"
+  mkdir -p "$appdir/usr/bin" "$appdir/usr/share"
 
   install -D -m 0755 "$(resolve_portable_binary)" "$appdir/usr/bin/aayushi-code"
   rsync -a --delete "$PORTABLE_TREE/data/" "$appdir/usr/share/aayushi-code/"

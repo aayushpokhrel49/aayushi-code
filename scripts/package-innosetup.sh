@@ -71,5 +71,9 @@ if [ ! -f "$ISS_FILE" ]; then
 fi
 
 OUTPUT="$ROOT/dist/AayushiCode-$VERSION-$ARCH-windows-setup.exe"
-"$ISCC_EXE" -dArch=$ARCH_FLAG //O"$ROOT/dist" //F"AayushiCode-$VERSION-$ARCH-windows-setup" "$ISS_FILE"
+# MSYS2 mangles leading-slash arguments (//O -> UNC paths), so disable
+# argument conversion and hand ISCC native Windows paths instead.
+mkdir -p "$ROOT/dist"
+MSYS2_ARG_CONV_EXCL='*' \
+  "$ISCC_EXE" -dArch=$ARCH_FLAG "/O$(cygpath -w "$ROOT/dist")" "$(cygpath -w "$ISS_FILE")"
 echo "-> $OUTPUT"

@@ -80,7 +80,7 @@ if get_option('portable') or host_machine.system() == 'windows'
         configuration: conf_data
     )
 elif get_option('bundle') and host_machine.system() == 'darwin'
-    lite_cargs += '-DMACOS_USE_BUNDLE'
+    aayushi_code_cargs += '-DMACOS_USE_BUNDLE'
     aayushi_code_bindir = 'Contents' / 'MacOS'
     aayushi_code_docdir = 'Contents' / 'Resources'
     aayushi_code_datadir = 'Contents' / 'Resources'

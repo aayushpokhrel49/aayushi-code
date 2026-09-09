@@ -215,7 +215,7 @@ for target in $TARGETS; do
     deb) make_deb || true ;;
     rpm) make_rpm || true ;;
     arch) make_arch || true ;;
-    appimage) make_appimage || true ;;
+    appimage) make_appimage ;;
     *) echo "Unknown target: $target (choices: deb rpm arch tar appimage)" ;;
   esac
 done
