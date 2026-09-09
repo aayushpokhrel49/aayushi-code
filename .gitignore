@@ -63,8 +63,8 @@ data/
 /run/
 /run-*/
 
-# Generated resources
-/resources/icons/icon.inl
+# resources/icons/icon.inl is a generated source needed to compile on
+# Linux (window icon) and must stay committed.
 
 # Operating system junk
 Thumbs.db
