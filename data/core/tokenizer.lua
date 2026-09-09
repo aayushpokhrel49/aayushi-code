@@ -233,8 +233,22 @@ function tokenizer.tokenize(incoming_syntax, text, state, resume)
       if p.whole_line[p_idx] and next > 1 then
         return
       end
-      res = p.pattern and { text:ufind((at_start or p.whole_line[p_idx]) and "^" .. code or code, next) }
-        or { regex.find(code, text, text:ucharpos(next), (at_start or p.whole_line[p_idx]) and regex.ANCHORED or 0) }
+      if p.pattern then
+        local ok, r1, r2, r3 = pcall(text.ufind, text,
+          (at_start or p.whole_line[p_idx]) and "^" .. code or code, next)
+        if not ok then
+          local key = bad_patterns[code]
+          if not key then
+            bad_patterns[code] = true
+            core.error("Invalid pattern <%s> in %s language plugin: %s",
+              code, current_syntax.name or "unnamed", r1)
+          end
+          return
+        end
+        res = { r1, r2, r3 }
+      else
+        res = { regex.find(code, text, text:ucharpos(next), (at_start or p.whole_line[p_idx]) and regex.ANCHORED or 0) }
+      end
       if p.regex and #res > 0 then -- set correct utf8 len for regex result
         local char_pos_1 = res[1] > next and string.ulen(text:sub(1, res[1])) or next
         local char_pos_2 = string.ulen(text:sub(1, res[2]))

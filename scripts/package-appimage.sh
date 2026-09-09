@@ -34,11 +34,19 @@ while [ $# -gt 0 ]; do
 done
 
 PORTABLE_TREE="$BUILD_DIR/lite-xl"
-if [ ! -x "$PORTABLE_TREE/aayushi-code" ]; then
+if [ ! -x "$PORTABLE_TREE/aayushi-code" ] && [ ! -x "$PORTABLE_TREE/bin/aayushi-code" ]; then
   echo "Portable tree not found at $PORTABLE_TREE."
   echo "Build it first with: scripts/build.sh --portable"
   exit 1
 fi
+
+resolve_portable_binary() {
+  if [ -x "$PORTABLE_TREE/aayushi-code" ]; then
+    echo "$PORTABLE_TREE/aayushi-code"
+  elif [ -x "$PORTABLE_TREE/bin/aayushi-code" ]; then
+    echo "$PORTABLE_TREE/bin/aayushi-code"
+  fi
+}
 
 setup_appimagetool() {
   if [ ! -e appimagetool ]; then
@@ -58,7 +66,7 @@ generate_appimage() {
   echo "Creating $appdir..."
   mkdir -p "$appdir/usr/bin"
 
-  install -D -m 0755 "$PORTABLE_TREE/bin/aayushi-code" "$appdir/usr/bin/aayushi-code"
+  install -D -m 0755 "$(resolve_portable_binary)" "$appdir/usr/bin/aayushi-code"
   rsync -a --delete "$PORTABLE_TREE/data/" "$appdir/usr/share/aayushi-code/"
   cp resources/icons/aayushi-code.svg "$appdir/"
   cp resources/linux/com.aayushi.code.desktop "$appdir/"

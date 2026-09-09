@@ -55,3 +55,66 @@ data/
 !data/plugins/
 !data/plugins/firstrun/
 
+# Local build bundling / staging
+/.app/
+/run/
+/run-*/
+
+# Generated resources
+/resources/icons/icon.inl
+
+# Operating system junk
+Thumbs.db
+Desktop.ini
+._*
+*~
+
+# Editors & IDEs
+.idea/
+.project
+.classpath
+.settings/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Node.js
+node_modules/
+
+# Logs, temp & crash files
+*.log
+*.tmp
+*.swp
+*.swo
+#*#
+.#*
+core
+core.*
+vgcore.*
+tags
+TAGS
+
+# Compiler / linker artifacts
+*.o
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.lib
+*.obj
+*.pdb
+config.log
+
+# Debugger
+.gdb_history
+.gdbinit
+

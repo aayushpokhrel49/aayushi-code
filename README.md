@@ -1,21 +1,17 @@
 # Aayushi Code
 
-A modern, lightweight code editor powered by Lua — a fork of [Lite XL](https://lite-xl.com) with a **VS Code-like interface** for a familiar, productive workflow.
+![CI](https://github.com/aayushpokhrel49/aayushi-code/actions/workflows/ci.yml/badge.svg)
+![Release](https://github.com/aayushpokhrel49/aayushi-code/actions/workflows/release.yml/badge.svg)
 
-**[Lite XL]** itself is a lightweight text editor written in Lua, adapted from [lite](https://github.com/rxi/lite). Aayushi Code builds on that foundation with an improved user experience: an application menu bar, a sidebar file explorer with file-type icons, a bottom panel drawer (Problems / Output / Debug Console / Terminal) and native **image preview** inside the editor.
+A modern, lightweight code editor powered by Lua. Aayushi Code combines a
+**VS Code-like interface** with a minimal C core, so it starts up instantly,
+stays responsive on any machine, and is fully customizable through Lua
+scripts.
 
----
-
-## Features
-
-- **Native image preview** — open `png`, `jpg`, `jpeg`, `gif`, `bmp`, `tga`, `webp`, `pnm`/`ppm`/`pgm`, `psd`, `hdr` and `pic` files directly in the editor. Images render in a dedicated tab with zoom, pan and "fit to view" (see [Image Preview](#image-preview)).
-- **VS Code-style interface**:
-  - Top application **menu bar** (File / Edit / Selection / View / Go / Run / Terminal / Help).
-  - **Sidebar file explorer** with per-file-type icons and tree indentation.
-  - Bottom **panel drawer** with `PROBLEMS`, `OUTPUT`, `DEBUG CONSOLE` and `TERMINAL` tabs.
-  - **Command Palette**, **Find / Replace**, **Find in Files**, minimap, line guides, code folding/indentation guides and more.
-- **Terminal** with tabs, ANSI colors, status bar integration and the drawer UI.
-- Everything from Lite XL you already rely on: LSP (language servers), linting, snippets, autocomplete, multiple cursors, workspaces, smooth scrolling, and a fully customizable set of plugins written in Lua.
+It ships with an application menu bar, a sidebar file explorer with
+per-file-type icons, a bottom panel drawer (Problems / Output / Debug Console /
+Terminal), a native **image preview** and native terminal support — everything
+you need for a familiar, productive workflow.
 
 ---
 
@@ -23,15 +19,27 @@ A modern, lightweight code editor powered by Lua — a fork of [Lite XL](https:/
 
 | | |
 |---|---|
-| *Add a screenshot here* | *Add a screenshot here* |
+| ![Editor screenshot](resources/screenshots/Screenshot%20from%202026-09-09%2019-23-53.png) | ![Editor screenshot](resources/screenshots/Screenshot%20from%202026-09-09%2019-27-28.png) |
 
-*The editor opens image files in a preview tab with zoom and fit-to-view controls.*
+---
+
+## Features
+
+- **VS Code-style interface**:
+  - Top application **menu bar** (File / Edit / Selection / View / Go / Run / Terminal / Help).
+  - **Sidebar file explorer** with per-file-type icons and tree indentation.
+  - Bottom **panel drawer** with `PROBLEMS`, `OUTPUT`, `DEBUG CONSOLE` and `TERMINAL` tabs.
+  - **Command Palette**, **Find / Replace**, **Find in Files**, minimap, line guides, code folding and indentation guides.
+- **Native image preview** — open `png`, `jpg`, `jpeg`, `gif`, `bmp`, `tga`, `webp`, `pnm`/`ppm`/`pgm`, `psd`, `hdr` and `pic` files directly in the editor (see [Image Preview](#image-preview)).
+- **Terminal** with tabs, ANSI colors, status bar integration and the drawer UI.
+- **Language tooling**: LSP (language servers), linting, snippets, autocomplete, multiple cursors, workspaces.
+- **Lua scripting** — every part of the editor is configurable and extensible through plugins written in Lua.
 
 ---
 
 ## Image Preview
 
-Image files are detected by extension and open in a special `ImageView` tab instead of raw text. The plugin (`data/plugins/imageview.lua`) is bundled and enabled by default.
+Image files are detected by extension and open in a dedicated `ImageView` tab instead of raw text. Images decode with [stb_image](https://github.com/nothings/stb) directly in the renderer, so no external image libraries are required.
 
 | Action | Shortcut |
 | --- | --- |
@@ -57,8 +65,6 @@ config.plugins.imageview.scale = 1
 ### Supported formats
 
 `png` `jpg` `jpeg` `gif` `bmp` `tga` `webp` `pnm` `ppm` `pgm` `psd` `hdr` `pic`
-
-Images are decoded with [stb_image](https://github.com/nothings/stb) directly in the renderer, so no external image libraries are required.
 
 ---
 
@@ -99,36 +105,55 @@ Images are decoded with [stb_image](https://github.com/nothings/stb) directly in
 | --- | --- |
 | `Ctrl+\` | Toggle the sidebar (file explorer) |
 | `Ctrl+H` | Toggle hidden files in the file explorer |
-| `Ctrl+=\` `Ctrl+-` | Increase / decrease UI scale |
+| `Ctrl+=` / `Ctrl+-` | Increase / decrease UI scale |
 | `Ctrl+0` | Reset UI scale to 100% |
 | `F11` | Toggle full screen |
 
-> **Note:** `Ctrl+=/-/0` control the *UI zoom* (as in Lite XL). To zoom inside an image preview use `Ctrl` + mouse wheel instead.
+> **Note:** `Ctrl+=/-/0` control the *UI zoom*. To zoom inside an image preview use `Ctrl` + mouse wheel instead.
 
 ---
 
 ## Installation
+
+### Prebuilt packages
+
+Release binaries are built automatically for every tagged release:
+
+| Platform | Format |
+| --- | --- |
+| Windows | `.exe` setup installer and portable `.zip` |
+| macOS | `.dmg` and `.zip` (Intel and Apple Silicon) |
+| Linux | `.deb`, `.rpm`, Arch `.pkg.tar.zst`, AppImage, portable `.tar.gz` |
+
+Grab them from the [Releases](https://github.com/aayushpokhrel49/aayushi-code/releases) page.
 
 ### Linux / macOS / Windows (source build)
 
 **Dependencies**
 
 - A C11 compiler (`gcc` / `clang` / `mingw` on Windows)
-- [Meson](https://mesonbuild.com) >= 0.60 and [Ninja](https://ninja-build.org)
+- [Meson](https://mesonbuild.com) >= 0.63 and [Ninja](https://ninja-build.org)
 - [SDL3](https://github.com/libsdl-org/SDL), [FreeType2](https://freetype.org), [PCRE2](https://www.pcre.org)
 - Lua 5.4 — bundled automatically via the Meson subproject (`subprojects/lua`)
 
 **Build**
 
 ```sh
-git clone https://github.com/aayushpokhrel49/lite-xl.git
-cd lite-xl
+git clone https://github.com/aayushpokhrel49/aayushi-code.git
+cd aayushi-code
 
 # configure a release build
 meson setup build --buildtype release
 
 # compile
 meson compile -C build
+```
+
+If SDL3 is not installed on your system, the build script downloads, builds and
+links it automatically:
+
+```sh
+./scripts/build.sh --forcefallback
 ```
 
 The resulting binary is `build/src/aayushi-code`.
@@ -138,18 +163,11 @@ The resulting binary is `build/src/aayushi-code`.
 ```sh
 # from the repo (uses ./data for plugins and resources)
 build/src/aayushi-code ./
+
+# or build a fully portable tree and run it from there
+./scripts/build.sh --portable --forcefallback
+./build-x86_64-linux/lite-xl/aayushi-code
 ```
-
-**Install**
-
-```sh
-meson install -C build
-# or, for a self-contained portable bundle:
-meson setup build --buildtype release -Dportable=true
-meson install -C build --destdir packaging
-```
-
-Run from the build tree directly if you prefer not to install; the editor will look for its `data/` directory relative to the executable.
 
 ---
 
@@ -179,8 +197,6 @@ config.plugins.terminal.background = { 30, 30, 34, 255 }
 config.plugins.terminal.text        = { 225, 225, 230, 255 }
 ```
 
-The **About** page (Settings → About) lists the project credits and links to the author's website and issue tracker.
-
 ---
 
 ## Plugins
@@ -190,7 +206,7 @@ Aayushi Code ships with a rich plugin set, all written in Lua:
 | Group | Plugins |
 | --- | --- |
 | Languages | `language_c`, `language_cpp`, `language_css`, `language_html`, `language_js`, `language_lua`, `language_md`, `language_python`, `language_rust`, `language_ts`, `language_xml` and their LSP integrations (`lsp_c`, `lsp_lua`, `lsp_python`, `lsp_rust`, `lsp_typescript`, `lsp_snippets`) |
-| UI / UX | `menubar`, `treeview`, `fileicons`, `toolbarview`, `imageview`, `minimap`, `lineguide`, `indentguide`, `linewrapping`, `search_ui`, `workspace`, `smoothcaret`, `selectionhighlight`, `undo_highlight`-style helpers, `vscodepanel` (redirect shim) |
+| UI / UX | `menubar`, `treeview`, `fileicons`, `toolbarview`, `imageview`, `minimap`, `lineguide`, `indentguide`, `linewrapping`, `search_ui`, `workspace`, `smoothcaret`, `selectionhighlight`, `vscodepanel` |
 | Editing | `autocomplete`, `autoinsert`, `bracketmatch`, `detectindent`, `drawwhitespace`, `findfile`, `macro`, `quote`, `reflow`, `snippets`, `tabularize`, `trimwhitespace`, `projectsearch` |
 | Terminal | `terminal` — full drawer with Problems / Output / Debug Console / Terminal tabs |
 | Lint | `lintplus`, `gitdiff_highlight` |
@@ -221,7 +237,7 @@ docs/
 
 ## Renderer Image API
 
-The renderer module exposes three new functions used by the image preview:
+The renderer module exposes three functions used by the image preview:
 
 ```lua
 renderer.load_image(path)    --> userdata | nil, errmsg
@@ -237,66 +253,37 @@ Implemented natively via `stb_image` + SDL surface blitting (`SDL_BlitSurfaceSca
 
 - **Editor starts with command-line errors**: run `./aayushi-code <dir>` from a terminal and check for `error.txt` written to the user-data directory.
 - **Image won't open as preview**: confirm the extension is in the supported list and the file exists; unknown/unsupported images fall back to normal text editing.
-- **Missing fonts or icons**: Lite XL bundles a default icon font; if glyphs appear blank, regenerate the font cache by deleting `cache` inside the user-data directory and restarting.
+- **Missing fonts or icons**: if glyphs appear blank, regenerate the font cache by deleting `cache` inside the user-data directory and restarting.
 - **Stale plugins after checkout**: the runtime copies in a build tree must be refreshed — use `meson install` or re-copy `data/` before reporting bugs caused by old files.
 
 ---
 
-## Building Packages
+## Continuous Delivery
 
-Installers and packages are produced from a [meson](https://mesonbuild.com) release build:
+Two GitHub Actions workflows build and ship Aayushi Code automatically:
 
+- `ci.yml` — builds on every push and pull request (Linux, macOS, Windows) to keep `main` green.
+- `release.yml` — on a `v*` tag (or on demand) it builds every installer: Windows setup + zip, macOS DMG/zip for Intel and Apple Silicon, and Linux deb / rpm / Arch / AppImage / tarball, then attaches them all to a GitHub Release.
+
+To publish a release:
+
+```sh
+git tag v2.1.7
+git push origin v2.1.7
 ```
-./scripts/build.sh --portable            # Linux/Windows portable tree
-./scripts/build.sh --bundle              # macOS .app bundle
-```
-
-| Format | Script | Output |
-| ------ | ------ | ------ |
-| Windows setup (.exe, Inno Setup) | `scripts/package-innosetup.sh` | `dist/AayushiCode-<ver>-<arch>-windows-setup.exe` |
-| Windows portable (.zip) | `scripts/package-windows.sh` | `dist/aayushi-code-<ver>-<arch>-windows.zip` |
-| macOS (.dmg or .zip) | `scripts/package-macos.sh --dmg` | `dist/aayushi-code-<ver>-<arch>-macos.dmg` |
-| Debian (.deb) | `scripts/package-linux.sh deb` | `dist/aayushi-code_<ver>_<arch>.deb` |
-| Fedora/RHEL (.rpm) | `scripts/package-linux.sh rpm` | `dist/aayushi-code-<ver>-1.<arch>.rpm` |
-| Arch Linux (.pkg.tar.zst) | `scripts/package-linux.sh arch` | `dist/aayushi-code-<ver>-1-<arch>.pkg.tar.zst` |
-| AppImage | `scripts/package-appimage.sh` | `dist/aayushi-code-<ver>-<arch>-linux.AppImage` |
-| Portable tarball | `scripts/package-linux.sh tar` | `dist/aayushi-code-<ver>-<arch>-linux-portable.tar.gz` |
-
-`scripts/package-linux.sh` builds every packager that is available on the
-machine (`deb rpm arch tar`), and a PKGBUILD for distro maintainers lives in
-`packaging/`. All build outputs go to the git-ignored `dist/` directory.
-
-The GitHub Actions workflow (`.github/workflows/release.yml`) builds the
-Windows setup installer, macOS DMG and all Linux packages on tag `v*` or on
-demand, and attaches them to a GitHub Release.
-
-## Roadmap
-
-- [x] Native image preview with zoom / pan / fit-to-view
-- [x] VS Code-style menu bar, sidebar icons, panel drawer
-- [x] Terminal drawer with Problems / Output / Debug Console tabs
-- [ ] Recent projects + "Open Recent" polish
-- [ ] Asynchronous image loading for very large images
-- [ ] Image cache keyed by file path + mtime
-- [ ] Color theme picker in Settings
 
 ---
 
 ## License
 
-Aayushi Code is free software, distributed under the terms specified in the [LICENSE](LICENSE) file (MIT, same as Lite XL and lite).
-
----
+Aayushi Code is free software released under the **MIT License**. See [LICENSE](LICENSE).
 
 ## Credits
 
-Built on the shoulders of:
+Aayushi Code is built on the shoulders of open source:
 
-- **[Lite XL]** — fork by Francesco Abbate, core by Adam Harrison and the Lite XL team.
-- **[lite]** — created by Rxi, the original lightweight editor Aayushi Code descends from.
-- **Author & maintainer** — Aayush Pokhrel ([website](https://aayushhpokhrel.com.np)).
+- **[Lite XL](https://lite-xl.com)** — fork by Francesco Abbate, core by Adam Harrison and the Lite XL team.
+- **[lite](https://github.com/rxi/lite)** — created by rxi, the minimal Lua editor Aayushi Code descends from.
+- **[stb](https://github.com/nothings/stb)** — single-file image decoding (stb_image).
 
-Full contributor list is available in the in-app *About* page (Settings → About).
-
-[Lite XL]: https://github.com/lite-xl/lite-xl
-[Lite]: https://github.com/rxi/lite
+**Author & maintainer** — Aayush Pokhrel ([website](https://aayushhpokhrel.com.np)).

@@ -6,6 +6,16 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SDL3_VERSION: "3.2.8"
+
 jobs:
   linux:
     name: Linux (${{ matrix.distro }})
@@ -13,72 +23,84 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [deb, rpm, arch, appimage]
-    env:
-      SDL3_VERSION: "3.2.8"
+        distro: [deb, rpm, arch, tar, appimage]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson ninja-build gcc pkg-config \
+          sudo apt-get install -y \
+            meson ninja-build gcc pkg-config \
             libcurl4-openssl-dev curl ca-certificates cmake \
-            dpkg-dev rpm python3 zstd rsync
+            dpkg-dev rpm python3 zstd rsync wget
 
       - name: Build portable tree
         run: ./scripts/build.sh --portable --forcefallback
 
-      - name: Package
-        run: |
-          mkdir -p dist
-          ./scripts/package-linux.sh ${{ matrix.distro }}
+      - name: Package ${{ matrix.distro }}
+        run: ./scripts/package-linux.sh ${{ matrix.distro }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.distro }}
           path: dist/*
+          if-no-files-found: error
 
   macos:
-    name: macOS
-    runs-on: macos-latest
-    env:
-      SDL3_VERSION: "3.2.8"
+    name: macOS (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: macos-13
+          - arch: arm64
+            runner: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install dependencies
         run: brew install meson ninja cmake curl
 
-      - name: Build and package
-        run: |
-          ./scripts/build.sh --bundle --forcefallback
-          ./scripts/package-macos.sh --dmg
+      - name: Build macOS app bundle
+        run: ./scripts/build.sh --bundle --forcefallback
 
-      - uses: actions/upload-artifact@v4
+      - name: Package DMG
+        run: ./scripts/package-macos.sh --dmg
+
+      - name: Package ZIP
+        run: ./scripts/package-macos.sh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: macos
+          name: macos-${{ matrix.arch }}
           path: dist/*
+          if-no-files-found: error
 
   windows:
-    name: Windows
+    name: Windows (x86_64)
     runs-on: windows-latest
     defaults:
       run:
         shell: msys2 {0}
-    env:
-      SDL3_VERSION: "3.2.8"
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: msys2/setup-msys2@v2
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
           update: true
@@ -97,23 +119,29 @@ jobs:
         shell: bash
         run: choco install innosetup -y --no-progress
 
-      - name: Build and package
-        run: |
-          ./scripts/build.sh --portable --forcefallback
-          ./scripts/package-windows.sh
+      - name: Build portable tree
+        run: ./scripts/build.sh --portable --forcefallback
 
-      - uses: actions/upload-artifact@v4
+      - name: Package (zip + setup installer)
+        run: ./scripts/package-windows.sh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: windows
+          name: windows-x86_64
           path: dist/*
+          if-no-files-found: error
 
   publish:
     name: Publish release
     needs: [linux, macos, windows]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
           merge-multiple: true

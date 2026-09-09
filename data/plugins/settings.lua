@@ -1701,19 +1701,40 @@ function Settings:setup_about()
   ---@type widget.label
   local version = Label(self.about, "version " .. VERSION)
   ---@type widget.label
-  local author = Label(self.about, "by Aayush Pokhrel")
-  author.foreground_color = style.dim
-  ---@type widget.label
   local description = Label(
     self.about,
-    "Aayushi Code is a modern, lightweight code editor powered by Lua."
+    "A modern, lightweight code editor powered by Lua."
   )
   ---@type widget.label
   local description2 = Label(
     self.about,
-    "Forked from Lite XL with a VS Code-like interface for a familiar, productive workflow."
+    "Built-in git integration, LSP support, terminal, and a VS Code-like interface."
   )
   description2.foreground_color = style.dim
+
+  ---@type widget.label
+  local features_title = Label(self.about, "Features")
+  features_title.font = style.big_font:copy(20 * SCALE)
+  features_title.foreground_color = style.accent
+
+  local feature_items = {
+    "Syntax highlighting for 25+ languages",
+    "Built-in git: commit, push, pull, branch, diff, blame, stash",
+    "Language Server Protocol (LSP) integration",
+    "Integrated terminal panel",
+    "File explorer with icons",
+    "Minimap and scrollbars",
+    "Find and replace across files",
+    "Customizable keybindings and themes",
+    "Cross-platform: Linux, macOS, Windows",
+  }
+
+  local feature_labels = {}
+  for _, text in ipairs(feature_items) do
+    local lbl = Label(self.about, "  " .. text)
+    lbl.foreground_color = style.text
+    feature_labels[#feature_labels + 1] = lbl
+  end
 
   local function open_link(link)
     local platform_filelauncher
@@ -1728,70 +1749,19 @@ function Settings:setup_about()
   end
 
   ---@type widget.button
-  local website_button = Button(self.about, "Website: aayushhpokhrel.com.np")
+  local website_button = Button(self.about, "Website")
   website_button:set_tooltip("Open https://aayushhpokhrel.com.np")
   function website_button:on_click() open_link("https://aayushhpokhrel.com.np/") end
 
   ---@type widget.button
-  local bug_button = Button(self.about, "Bug Reports: aayushicode@aayushhpokhrel.com.np")
-  bug_button:set_tooltip("Send bug reports to aayushicode@aayushhpokhrel.com.np")
-  function bug_button:on_click() open_link("mailto:aayushicode@aayushhpokhrel.com.np") end
-
-  ---@type widget.button
-  local github_button = Button(self.about, "GitHub: aayushpokhrel49")
+  local github_button = Button(self.about, "GitHub")
   github_button:set_tooltip("Open https://github.com/aayushpokhrel49")
   function github_button:on_click() open_link("https://github.com/aayushpokhrel49") end
 
   ---@type widget.button
-  local button = Button(self.about, "Lite XL Project")
-  button:set_tooltip("Open the upstream Lite XL project at https://lite-xl.com/")
-  function button:on_click() open_link("https://lite-xl.com/") end
-
-  ---@type widget.listbox
-  local contributors = ListBox(self.about)
-  contributors.scrollable = true
-  contributors:add_column("Contributors")
-  contributors:add_column("")
-  contributors:add_column("Website")
-  function contributors:on_row_click(_, data) open_link(data) end
-
-local contributors_list = {
-  { "Aayush Pokhrel", "Author & Maintainer", "https://aayushhpokhrel.com.np" },
-  { "Rxi", "Lite Founder", "https://github.com/rxi" },
-  { "Francesco Abbate", "Lite XL Founder", "https://github.com/franko" },
-  { "Adam Harrison", "Core", "https://github.com/adamharrison" },
-  { "Andrea Zanellato", "CI, Website", "https://github.com/redtide" },
-  { "Björn Buckwalter", "MacOS Support", "https://github.com/bjornbm" },
-  { "boppyt", "Contributor", "https://github.com/boppyt" },
-  { "Cukmekerb", "Contributor", "https://github.com/vincens2005" },
-  { "Daniel Rocha", "Contributor", "https://github.com/dannRocha" },
-  { "daubaris", "Contributor", "https://github.com/daubaris" },
-  { "Dheisom Gomes", "Contributor", "https://github.com/dheisom" },
-  { "Evgeny Petrovskiy", "Contributor", "https://github.com/eugenpt" },
-  { "Ferdinand Prantl", "Contributor", "https://github.com/prantlf" },
-  { "Jan", "Build System", "https://github.com/Jan200101" },
-  { "Janis-Leuenberger", "MacOS Support", "https://github.com/Janis-Leuenberger" },
-  { "Jefferson", "Contributor", "https://github.com/jgmdev" },
-  { "Jipok", "Contributor", "https://github.com/Jipok" },
-  { "Joshua Minor", "Contributor", "https://github.com/jminor" },
-  { "George Linkovsky", "Contributor", "https://github.com/Timofffee" },
-  { "Guldoman", "Core", "https://github.com/Guldoman" },
-  { "liquidev", "Contributor", "https://github.com/liquidev" },
-  { "Mat Mariani", "MacOS Support", "https://github.com/mathewmariani" },
-  { "Nightwing", "Contributor", "https://github.com/Nightwing13" },
-  { "Nils Kvist", "Contributor", "https://github.com/budRich" },
-  { "Not-a-web-Developer", "Contributor", "https://github.com/Not-a-web-Developer" },
-  { "Robert Štojs", "CI", "https://github.com/netrobert" },
-  { "sammyette", "Plugins", "https://github.com/TorchedSammy" },
-  { "Takase", "Core", "https://github.com/takase1121" },
-  { "xwii", "Contributor", "https://github.com/xcb-xwii" }
-}
-
-  for _, c in ipairs(contributors_list) do
-    contributors:add_row({
-      c[1], ListBox.COLEND, c[2], ListBox.COLEND, c[3]
-    }, c[3])
-  end
+  local bug_button = Button(self.about, "Report a Bug")
+  bug_button:set_tooltip("Send bug reports to aayushicode@aayushhpokhrel.com.np")
+  function bug_button:on_click() open_link("mailto:aayushicode@aayushhpokhrel.com.np") end
 
   ---@param self widget
   function self.about:update_positions()
@@ -1808,23 +1778,29 @@ local contributors_list = {
       title:get_bottom() + (style.padding.y / 2)
     )
 
-    author:set_position(
-      center - (author:get_width() / 2),
-      version:get_bottom() + (style.padding.y / 2)
-    )
-
     description:set_position(
       center - (description:get_width() / 2),
-      author:get_bottom() + (style.padding.y / 2)
+      version:get_bottom() + (style.padding.y / 2)
     )
 
     description2:set_position(
       center - (description2:get_width() / 2),
-      description:get_bottom() + (style.padding.y / 2)
+      description:get_bottom() + (style.padding.y)
     )
 
-    local button_y = description2:get_bottom() + style.padding.y
-    local row = { website_button, github_button, button }
+    features_title:set_position(
+      center - (features_title:get_width() / 2),
+      description2:get_bottom() + style.padding.y * 2
+    )
+
+    local fy = features_title:get_bottom() + style.padding.y
+    for _, lbl in ipairs(feature_labels) do
+      lbl:set_position(center - lbl:get_width() / 2, fy)
+      fy = fy + lbl:get_height() + 2 * SCALE
+    end
+
+    local button_y = fy + style.padding.y
+    local row = { website_button, github_button, bug_button }
     local gap = style.padding.x
     local row_width = 0
     for _, b in ipairs(row) do
@@ -1836,25 +1812,6 @@ local contributors_list = {
       b:set_position(bx, button_y)
       bx = bx + b:get_width() + gap
     end
-
-    bug_button:set_position(
-      center - (bug_button:get_width() / 2),
-      button_y + website_button:get_height() + 4 * SCALE
-    )
-
-    local content_bottom = bug_button:get_bottom() + style.padding.y
-
-    contributors:set_position(
-      style.padding.x,
-      content_bottom
-    )
-
-    contributors:set_size(
-      self:get_width() - (style.padding.x * 2),
-      self:get_height() - (content_bottom + (style.padding.y * 2))
-    )
-
-    contributors:set_visible_rows()
   end
 end
 

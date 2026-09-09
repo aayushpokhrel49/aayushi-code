@@ -35,8 +35,18 @@ esac
 TARGETS="${*:-deb rpm arch tar}"
 TARGETS="${TARGETS//, / }"
 
+# In a portable build the executable is installed to the top of the tree
+# (meson build_dir "aayushi_code_bindir" = "/"); older trees placed it in bin/.
+portable_binary() {
+  if [ -x "$PORTABLE_TREE/aayushi-code" ]; then
+    echo "$PORTABLE_TREE/aayushi-code"
+  elif [ -x "$PORTABLE_TREE/bin/aayushi-code" ]; then
+    echo "$PORTABLE_TREE/bin/aayushi-code"
+  fi
+}
+
 require_tree() {
-  if [ ! -x "$PORTABLE_TREE/aayushi-code" ]; then
+  if [ -z "$(portable_binary)" ]; then
     echo "Portable tree not found at $PORTABLE_TREE."
     echo "Build it first with: scripts/build.sh --portable"
     exit 1
@@ -48,7 +58,7 @@ stage_system_tree() {
   rm -rf "$dest"
   mkdir -p "$dest/usr/bin" "$dest/usr/share" "$dest/usr/share/doc"
 
-  cp "$PORTABLE_TREE/bin/aayushi-code" "$dest/usr/bin/aayushi-code"
+  cp "$(portable_binary)" "$dest/usr/bin/aayushi-code"
 
   rsync -a --delete "$PORTABLE_TREE/data/" "$dest/usr/share/aayushi-code/"
   if [ -d "$PORTABLE_TREE/doc" ]; then

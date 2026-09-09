@@ -120,15 +120,15 @@ function DocView:get_gutter_width()
 end
 
 local old_text_change = Doc.on_text_change
-local function on_text_change(doc)
+local function on_text_change(doc, change_type)
 	doc.gitdiff_highlight_last_doc_lines = #doc.lines
-	return old_text_change(doc, type)
+	return old_text_change(doc, change_type)
 end
 function Doc:on_text_change(type)
-	if not get_diff(self).is_in_repo then return on_text_change(self) end
+	if not get_diff(self).is_in_repo then return on_text_change(self, type) end
 
 	local line = self:get_selection()
-	if diffs[self][line] == "addition" then return on_text_change(self) end
+	if diffs[self][line] == "addition" then return on_text_change(self, type) end
 
 	-- TODO figure out how to detect an addition
 	local last_doc_lines = self.gitdiff_highlight_last_doc_lines or 0
@@ -137,7 +137,7 @@ function Doc:on_text_change(type)
 	elseif type == "remove" then
 		diffs[self][line] = "deletion"
 	end
-	return on_text_change(self)
+	return on_text_change(self, type)
 end
 
 local old_doc_save = Doc.save

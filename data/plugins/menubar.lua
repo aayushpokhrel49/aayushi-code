@@ -144,7 +144,7 @@ local MENUS = {
       DIVIDER,
       { text = "Explorer", command = "treeview:toggle" },
       { text = "Search", command = "project-search:find" },
-      { text = "Source Control", action = not_implemented("Source Control") },
+      { text = "Source Control", command = "git:toggle-panel" },
       { text = "Run", action = not_implemented("Run") },
       { text = "Extensions", action = not_implemented("Extensions") },
       DIVIDER,
@@ -218,6 +218,37 @@ local MENUS = {
     },
   },
   {
+    name = "Source Control",
+    items = {
+      { text = "Toggle Source Control Panel", command = "git:toggle-panel", shortcut = "Ctrl+Shift+G" },
+      DIVIDER,
+      { text = "Commit...", command = "git:commit", shortcut = "Ctrl+Shift+C" },
+      { text = "Amend Last Commit", command = "git:commit-amend" },
+      DIVIDER,
+      { text = "Push", command = "git:push", shortcut = "Ctrl+Shift+P" },
+      { text = "Push (Force with Lease)", command = "git:push-force" },
+      { text = "Pull", command = "git:pull" },
+      { text = "Fetch", command = "git:fetch" },
+      DIVIDER,
+      { text = "Create Branch...", command = "git:branch-create" },
+      { text = "Switch Branch...", command = "git:branch-switch" },
+      { text = "Delete Branch...", command = "git:branch-delete" },
+      DIVIDER,
+      { text = "Stage All Changes", command = "git:stage-all" },
+      { text = "Unstage All", command = "git:unstage-all" },
+      { text = "Discard All Changes", command = "git:discard-changes" },
+      DIVIDER,
+      { text = "View Diff", command = "git:diff-current" },
+      { text = "View Log", command = "git:log", shortcut = "Ctrl+Shift+L" },
+      { text = "View Blame", command = "git:blame-current" },
+      DIVIDER,
+      { text = "Stash Changes", command = "git:stash" },
+      { text = "Pop Stash", command = "git:stash-pop" },
+      DIVIDER,
+      { text = "Refresh Status", command = "git:refresh" },
+    },
+  },
+  {
     name = "Help",
     items = {
       { text = "Show All Commands", command = "core:find-command" },
@@ -225,9 +256,7 @@ local MENUS = {
       { text = "Documentation", action = function()
         system.exec(string.format("xdg-open %q", "https://lite-xl.github.io/"))
       end },
-      { text = "About Aayushi Code", action = function()
-        core.log("Aayushi Code - a Lite XL based code editor")
-      end },
+      { text = "About Aayushi Code", command = "ui:settings" },
     },
   },
 }
