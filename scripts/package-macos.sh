@@ -55,13 +55,13 @@ fi
 if [ "$MAKE_DMG" = true ]; then
   echo "==> Creating DMG..."
   ln -s /Applications "$STAGE/Applications"
-  local dmg="$ROOT/dist/aayushi-code-$VERSION-$ARCH-macos.dmg"
+  dmg="$ROOT/dist/aayushi-code-$VERSION-$ARCH-macos.dmg"
   hdiutil create -volname "$APP_NAME" -srcfolder "$STAGE" -ov -format UDZO "$dmg"
   rm -f "$STAGE/Applications"
   echo "-> $dmg"
 else
   echo "==> Creating ZIP..."
-  local zip="$ROOT/dist/aayushi-code-$VERSION-$ARCH-macos.zip"
+  zip="$ROOT/dist/aayushi-code-$VERSION-$ARCH-macos.zip"
   (cd "$STAGE" && zip -qr "$zip" "$APP_NAME")
   echo "-> $zip"
 fi
