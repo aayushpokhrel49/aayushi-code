@@ -22,7 +22,13 @@
     </screenshot>
   </screenshots>
 
-  <url type="homepage">https://lite-xl.com</url>
+  <url type="homepage">https://aayushhpokhrel.com.np</url>
+
+  <developer id="com.aayushi.code">
+    <name>Aayushi Code</name>
+  </developer>
+
+  <update_contact>info@aayushhpokhrel.com.np</update_contact>
 
   <provides>
     <binary>aayushi-code</binary>

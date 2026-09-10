@@ -3,7 +3,7 @@ Version:        @VERSION@
 Release:        1%{?dist}
 Summary:        Aayushi Code - a lightweight, ultra-fast code editor
 License:        MIT
-URL:            https://example.com/aayushi-code
+URL:            https://aayushhpokhrel.com.np
 Source0:        %{name}-%{version}.tar.gz
 
 %description

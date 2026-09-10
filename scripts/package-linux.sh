@@ -150,9 +150,9 @@ make_arch() {
 pkgname = aayushi-code
 pkgver = $pkgver
 pkgdesc = A lightweight, ultra-fast code editor written in Lua, with bundled language servers
-url = https://example.com/aayushi-code
+url = https://aayushhpokhrel.com.np
 builddate = $(date +%s)
-packager = Aayushi Code Project <aayushi-code@example.com>
+packager = Aayushi Code Project <info@aayushhpokhrel.com.np>
 size = 0
 arch = $ARCH
 license = MIT

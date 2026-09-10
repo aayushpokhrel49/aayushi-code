@@ -54,10 +54,28 @@ fi
 
 if [ "$MAKE_DMG" = true ]; then
   echo "==> Creating DMG..."
-  ln -s /Applications "$STAGE/Applications"
   dmg="$ROOT/dist/aayushi-code-$VERSION-$ARCH-macos.dmg"
-  hdiutil create -volname "$APP_NAME" -srcfolder "$STAGE" -ov -format UDZO "$dmg"
-  rm -f "$STAGE/Applications"
+  draft="$ROOT/dist/.aayushi-code-draft.dmg"
+  mountpoint="$ROOT/dist/.aayushi-code-mnt"
+  cleanup() {
+    hdiutil detach "$mountpoint" -force >/dev/null 2>&1 || true
+    rm -rf "$mountpoint"
+    rm -f "$draft"
+  }
+  trap cleanup EXIT
+  rm -rf "$mountpoint"
+  mkdir -p "$mountpoint"
+  # Do NOT put a "/Applications" symlink in the folder passed to
+  # "hdiutil create -srcfolder": hdiutil dereferences directory symlinks and
+  # would copy the ENTIRE host /Applications into the image, which hangs for
+  # many minutes on CI runners (full Xcode tree). Instead, create the image
+  # from the app-only stage, mount it and inject the shortcut.
+  hdiutil create -volname "$APP_NAME" -srcfolder "$STAGE" -ov -format UDRW "$draft"
+  hdiutil attach "$draft" -nobrowse -mountpoint "$mountpoint"
+  ln -s /Applications "$mountpoint/Applications"
+  hdiutil detach "$mountpoint"
+  rm -f "$dmg"
+  hdiutil convert "$draft" -format UDZO -o "$dmg"
   echo "-> $dmg"
 else
   echo "==> Creating ZIP..."

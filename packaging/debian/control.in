@@ -1,7 +1,7 @@
 Source: aayushi-code
 Section: editors
 Priority: optional
-Maintainer: Aayushi Code Project <aayushi-code@example.com>
+Maintainer: Aayushi Code Project <info@aayushhpokhrel.com.np>
 Package: aayushi-code
 Version: @VERSION@
 Architecture: @ARCH@

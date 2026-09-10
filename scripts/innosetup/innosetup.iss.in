@@ -1,7 +1,7 @@
 #define MyAppName      "Aayushi Code"
 #define MyAppVersion   "@PROJECT_VERSION@"
 #define MyAppPublisher "Aayushi Code Project"
-#define MyAppURL       "https://example.com/aayushi-code"
+#define MyAppURL       "https://aayushhpokhrel.com.np"
 #define MyAppExeName   "aayushi-code.exe"
 #define BuildDir       "@PROJECT_BUILD_DIR@"
 #define SourceDir      "@PROJECT_SOURCE_DIR@"

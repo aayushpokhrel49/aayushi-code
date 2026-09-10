@@ -1,4 +1,4 @@
-# Maintainer: Aayushi Code Project <aayushi-code@example.com>
+# Maintainer: Aayushi Code Project <info@aayushhpokhrel.com.np>
 # Build from a release tarball, or use scripts/package-linux.sh for a
 # prebuilt package. PKGBUILD-build requires SDL3 development files.
 
@@ -7,7 +7,7 @@ pkgver=2.1.7
 pkgrel=1
 pkgdesc="A lightweight, ultra-fast code editor written in Lua, with bundled language servers"
 arch=('x86_64')
-url="https://example.com/aayushi-code"
+url="https://aayushhpokhrel.com.np"
 license=('MIT')
 depends=('glibc')
 makedepends=('meson' 'ninja' 'pkgconf')

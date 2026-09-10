@@ -286,4 +286,4 @@ Aayushi Code is built on the shoulders of open source:
 - **[lite](https://github.com/rxi/lite)** — created by rxi, the minimal Lua editor Aayushi Code descends from.
 - **[stb](https://github.com/nothings/stb)** — single-file image decoding (stb_image).
 
-**Author & maintainer** — Aayush Pokhrel ([website](https://aayushhpokhrel.com.np)).
+**Author & maintainer** — Aayush Pokhrel ([website](https://aayushhpokhrel.com.np), [email](mailto:info@aayushhpokhrel.com.np)).
