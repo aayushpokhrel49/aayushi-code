@@ -445,6 +445,8 @@ end
 
 function DocView:draw_line_text(line, x, y)
   local default_font = self:get_font()
+  local _, indent_size = self.doc:get_indent_info()
+  default_font:set_tab_size(indent_size)
   local tx, ty = x, y + self:get_line_text_y_offset()
   local last_token = nil
   local tokens = self.doc.highlighter:get_line(line).tokens
@@ -456,6 +458,7 @@ function DocView:draw_line_text(line, x, y)
   for tidx, type, text in self.doc.highlighter:each_token(line) do
     local color = style.syntax[type]
     local font = style.syntax_fonts[type] or default_font
+    if font ~= default_font then font:set_tab_size(indent_size) end
     -- do not render newline, fixes issue #1164
     if tidx == last_token then text = text:sub(1, -2) end
     tx = renderer.draw_text(font, text, tx, ty, color, {tab_offset = tx - start_tx})
@@ -500,8 +503,10 @@ function DocView:draw_line_body(line, x, y)
 
   -- draw selection if it overlaps this line
   local lh = self:get_line_height()
+  local has_selection = false
   for lidx, line1, col1, line2, col2 in self.doc:get_selections(true) do
     if line >= line1 and line <= line2 then
+      has_selection = true
       local text = self.doc.lines[line]
       if line1 ~= line then col1 = 1 end
       if line2 ~= line then col2 = #text + 1 end
@@ -590,14 +595,15 @@ function DocView:draw()
 
   local minline, maxline = self:get_visible_line_range()
   local lh = self:get_line_height()
+  local pos = self.position
+  local gw, gpad = self:get_gutter_width()
+  local gutter_width = gpad and gw - gpad or gw
 
   local x, y = self:get_line_screen_position(minline)
-  local gw, gpad = self:get_gutter_width()
   for i = minline, maxline do
-    y = y + (self:draw_line_gutter(i, self.position.x, y, gpad and gw - gpad or gw) or lh)
+    y = y + (self:draw_line_gutter(i, pos.x, y, gutter_width) or lh)
   end
 
-  local pos = self.position
   x, y = self:get_line_screen_position(minline)
   -- the clip below ensure we don't write on the gutter region. On the
   -- right side it is redundant with the Node's clip.

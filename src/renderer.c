@@ -582,12 +582,19 @@ double ren_font_group_get_width(RenFont **fonts, const char *text, size_t len, R
   while (text < end) {
     unsigned int codepoint;
     text = utf8_to_codepoint(text, end, &codepoint);
-    GlyphMetric *metric = NULL;
-    font_group_get_glyph(fonts, codepoint, 0, NULL, &metric);
-    width += font_get_xadvance(fonts[0], codepoint, metric, width, tab);
-    if (!set_x_offset && metric) {
-      set_x_offset = true;
-      *x_offset = metric->bitmap_left; // TODO: should this be scaled by the surface scale?
+    /* Fast path for common ASCII whitespace */
+    if (codepoint == ' ') {
+      width += fonts[0]->space_advance;
+    } else if (codepoint == '\t') {
+      width += font_get_xadvance(fonts[0], codepoint, NULL, width, tab);
+    } else {
+      GlyphMetric *metric = NULL;
+      font_group_get_glyph(fonts, codepoint, 0, NULL, &metric);
+      width += font_get_xadvance(fonts[0], codepoint, metric, width, tab);
+      if (!set_x_offset && metric) {
+        set_x_offset = true;
+        *x_offset = metric->bitmap_left;
+      }
     }
   }
   if (!set_x_offset)
@@ -628,17 +635,20 @@ double ren_draw_text(RenSurface *rs, RenFont **fonts, const char *text, size_t l
   const char* end = text + len;
   uint8_t* destination_pixels = surface->pixels;
   int clip_end_x = clip.x + clip.w, clip_end_y = clip.y + clip.h;
+  const SDL_PixelFormatDetails* surface_format = SDL_GetPixelFormatDetails(surface->format);
 
   RenFont* last = NULL;
   double last_pen_x = x;
   bool underline = fonts[0]->style & FONT_STYLE_UNDERLINE;
   bool strikethrough = fonts[0]->style & FONT_STYLE_STRIKETHROUGH;
+  const bool is_subpixel = FONT_IS_SUBPIXEL(fonts[0]);
 
   while (text < end) {
     unsigned int codepoint, r, g, b;
     text = utf8_to_codepoint(text, end,  &codepoint);
     SDL_Surface *font_surface = NULL; GlyphMetric *metric = NULL;
-    RenFont* font = font_group_get_glyph(fonts, codepoint, (int)(fmod(pen_x, 1.0) * SUBPIXEL_BITMAPS_CACHED), &font_surface, &metric);
+    int subpixel_idx = is_subpixel ? (int)(fmod(pen_x, 1.0) * SUBPIXEL_BITMAPS_CACHED) : 0;
+    RenFont* font = font_group_get_glyph(fonts, codepoint, subpixel_idx, &font_surface, &metric);
     if (!metric)
       break;
     int start_x = floor(pen_x) + metric->bitmap_left;
@@ -648,6 +658,7 @@ double ren_draw_text(RenSurface *rs, RenFont **fonts, const char *text, size_t l
       ren_draw_rect(rs, (RenRect){ start_x + 1, y, font->space_advance - 1, ren_font_group_get_height(fonts) }, color);
     if (!is_whitespace(codepoint) && font_surface && color.a > 0 && end_x >= clip.x && start_x < clip_end_x) {
       uint8_t* source_pixels = font_surface->pixels;
+      const SDL_PixelFormatDetails* font_surface_format = SDL_GetPixelFormatDetails(font_surface->format);
       for (int line = metric->y0; line < metric->y1; ++line) {
         int target_y = line - metric->y0 + y - metric->bitmap_top + (fonts[0]->baseline * surface_scale);
         if (target_y < clip.y)
@@ -661,9 +672,6 @@ double ren_draw_text(RenSurface *rs, RenFont **fonts, const char *text, size_t l
           start_x += offset;
           glyph_start += offset;
         }
-        
-        const SDL_PixelFormatDetails* surface_format = SDL_GetPixelFormatDetails(surface->format);
-        const SDL_PixelFormatDetails* font_surface_format = SDL_GetPixelFormatDetails(font_surface->format);
 
         uint32_t* destination_pixel = (uint32_t*)&(destination_pixels[surface->pitch * target_y + start_x * surface_format->bytes_per_pixel]);
         uint8_t* source_pixel = &source_pixels[line * font_surface->pitch + glyph_start * font_surface_format->bytes_per_pixel];

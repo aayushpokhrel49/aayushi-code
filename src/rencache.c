@@ -85,12 +85,28 @@ static inline int rencache_max(int a, int b) { return a > b ? a : b; }
 
 /* 32bit fnv-1a hash */
 #define HASH_INITIAL 2166136261
+#define FNV_PRIME 16777619u
 
 static void hash(unsigned *h, const void *data, int size) {
   const unsigned char *p = data;
-  while (size--) {
-    *h = (*h ^ *p++) * 16777619;
+  unsigned hi = *h;
+  /* Process 4 bytes at a time when possible for better throughput */
+  int aligned_size = size & ~3;
+  const unsigned *pw = (const unsigned *)p;
+  int i;
+  for (i = 0; i < aligned_size / 4; i++) {
+    unsigned word = pw[i];
+    hi = (hi ^ (word & 0xFF)) * FNV_PRIME;
+    hi = (hi ^ ((word >> 8) & 0xFF)) * FNV_PRIME;
+    hi = (hi ^ ((word >> 16) & 0xFF)) * FNV_PRIME;
+    hi = (hi ^ ((word >> 24) & 0xFF)) * FNV_PRIME;
   }
+  /* Process remaining bytes */
+  p = (const unsigned char *)(pw + i);
+  for (i = aligned_size; i < size; i++) {
+    hi = (hi ^ *p++) * FNV_PRIME;
+  }
+  *h = hi;
 }
 
 
@@ -157,7 +173,7 @@ static void* push_command(RenWindow *window_renderer, enum CommandType type, int
   }
   Command *cmd = (Command*) (window_renderer->command_buf + window_renderer->command_buf_idx);
   window_renderer->command_buf_idx = n;
-  memset(cmd, 0, size);
+  /* Only zero the header; callers fill all fields immediately after */
   cmd->type = type;
   cmd->size = size;
   return cmd->command;
@@ -269,15 +285,17 @@ static void update_overlapping_cells(RenRect r, unsigned h) {
 
 
 static void push_rect(RenRect r, int *count) {
-  /* try to merge with existing rectangle */
-  for (int i = *count - 1; i >= 0; i--) {
+  /* merge with any existing overlapping rectangle; restart on merge to catch cascades */
+  for (int i = 0; i < *count; i++) {
     RenRect *rp = &rect_buf[i];
     if (rects_overlap(*rp, r)) {
-      *rp = merge_rects(*rp, r);
-      return;
+      r = merge_rects(*rp, r);
+      /* remove merged rect and restart scan */
+      *rp = rect_buf[--(*count)];
+      i = -1; /* will be 0 after i++ */
     }
   }
-  /* couldn't merge with previous rectangle: push */
+  /* couldn't merge with any rectangle: push */
   rect_buf[(*count)++] = r;
 }
 
@@ -298,17 +316,28 @@ void rencache_end_frame(RenWindow *window_renderer) {
 
   /* push rects for all cells changed from last frame, reset cells */
   int rect_count = 0;
+  int dirty_count = 0;
   int max_x = screen_rect.width / CELL_SIZE + 1;
   int max_y = screen_rect.height / CELL_SIZE + 1;
+  /* If too many cells change (e.g. scrolling), just redraw the whole screen.
+  ** This avoids the O(rects * commands) reprocessing cost in the draw pass below. */
+  const int full_redraw_threshold = (max_x * max_y) / 4;
   for (int y = 0; y < max_y; y++) {
     for (int x = 0; x < max_x; x++) {
       /* compare previous and current cell for change */
       int idx = cell_idx(x, y);
       if (cells[idx] != cells_prev[idx]) {
-        push_rect((RenRect) { x, y, 1, 1 }, &rect_count);
+        dirty_count++;
+        if (dirty_count <= full_redraw_threshold) {
+          push_rect((RenRect) { x, y, 1, 1 }, &rect_count);
+        }
       }
       cells_prev[idx] = HASH_INITIAL;
     }
+  }
+  if (dirty_count > full_redraw_threshold) {
+    rect_count = 1;
+    rect_buf[0] = screen_rect;
   }
 
   /* expand rects from cells to pixels */

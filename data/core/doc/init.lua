@@ -70,20 +70,34 @@ function Doc:load(filename)
   local fp = assert(io.open(filename, "rb"))
   self:reset()
   self.lines = {}
-  local i = 1
-  for line in fp:lines() do
-    if line:byte(-1) == 13 then
-      line = line:sub(1, -2)
+  -- Read entire file at once for better I/O performance on large files
+  local content = fp:read("*a")
+  fp:close()
+  if content and #content > 0 then
+    -- Check for CRLF and convert to LF
+    if content:find("\r\n") then
       self.crlf = true
+      content = content:gsub("\r\n", "\n")
+    elseif content:byte(-1) == 13 then
+      -- Handle single trailing CR
+      self.crlf = true
+      content = content:sub(1, -2)
     end
-    table.insert(self.lines, line .. "\n")
-    self.highlighter.lines[i] = false
-    i = i + 1
+    -- Strip trailing newline so the split below yields the correct line count
+    if content:sub(-1) == "\n" then
+      content = content:sub(1, -2)
+    end
+    -- Split into lines
+    local i = 1
+    for line in (content .. "\n"):gmatch("(.-)\n") do
+      self.lines[i] = line .. "\n"
+      self.highlighter.lines[i] = false
+      i = i + 1
+    end
   end
   if #self.lines == 0 then
     table.insert(self.lines, "\n")
   end
-  fp:close()
   self:reset_syntax()
 end
 

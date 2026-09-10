@@ -10,7 +10,9 @@ local function push_token(t, type, text)
   type = type or "normal"
   local prev_type = t[#t-1]
   local prev_text = t[#t]
-  if prev_type and (prev_type == type or (prev_text:ufind("^%s*$") and type ~= "incomplete")) then
+  if prev_type and prev_type == type then
+    t[#t] = prev_text .. text
+  elseif prev_type and prev_text:ufind("^%s*$") and type ~= "incomplete" then
     t[#t-1] = type
     t[#t] = prev_text .. text
   else
