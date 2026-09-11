@@ -1504,7 +1504,8 @@ function lsp.request_completion(doc, line, col, forced)
             desc = desc:gsub("[%s\n]+$", "")
               :gsub("\n\n\n+", "\n\n")
 
-            symbols.items[label] = {
+            symbols.items[#symbols.items+1] = {
+              text = label,
               info = info,
               desc = desc,
               data = {
@@ -1518,7 +1519,7 @@ function lsp.request_completion(doc, line, col, forced)
               and
               not symbol.documentation
             then
-              symbols.items[label].onhover = autocomplete_onhover
+              symbols.items[#symbols.items].onhover = autocomplete_onhover
             end
 
             symbol_count = symbol_count + 1

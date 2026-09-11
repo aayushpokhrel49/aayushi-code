@@ -16,7 +16,7 @@ local cache = setmetatable({}, { __mode = "k" })
 
 config.plugins.autocomplete = common.merge({
   -- Amount of characters that need to be written for autocomplete
-  min_len = 3,
+  min_len = 1,
   -- The max amount of visible items
   max_height = 6,
   -- The max amount of scrollable items
@@ -41,7 +41,7 @@ config.plugins.autocomplete = common.merge({
       description = "Amount of characters that need to be written for autocomplete to popup.",
       path = "min_len",
       type = "number",
-      default = 3,
+      default = 1,
       min = 1,
       max = 5
     },
@@ -145,7 +145,14 @@ local mt = { __tostring = function(t) return t.text end }
 
 function autocomplete.add(t, manually_triggered)
   local items = {}
-  for text, info in pairs(t.items) do
+  -- t.items may be an ordered array (from LSP servers) or a string-keyed
+  -- map (from syntax/document symbols). Keep insertion order when possible
+  -- so LSP sortText ordering is preserved like in VSCode.
+  local ordered = type(t.items) == "table" and t.items[1] ~= nil
+  local iter = ordered and ipairs or pairs
+  for key, info in iter(t.items) do
+    -- key is the text (for maps) or the array index (for arrays)
+    local text = ordered and (type(info) == "table" and info.text or info) or key
     if type(info) == "table" then
       table.insert(
         items,
@@ -318,7 +325,11 @@ local function update_suggestions()
   local items = {}
   for _, v in pairs(map) do
     if common.match_pattern(filename, v.files) then
-      for _, item in pairs(v.items) do
+      -- preserve insertion order for LSP arrays (sortText) while still
+      -- accepting string-keyed maps from syntax/document symbols
+      local ordered = type(v.items) == "table" and v.items[1] ~= nil
+      local iter = ordered and ipairs or pairs
+      for _, item in iter(v.items) do
         table.insert(items, item)
         assigned_sym[item.text] = true
       end
@@ -361,14 +372,33 @@ local function update_suggestions()
   end
 
   -- fuzzy match, remove duplicates and store
-  items = common.fuzzy_match(items, partial)
+  -- When the partial is empty (e.g. right after typing a trigger char) keep
+  -- the insertion order from the maps/LSP servers so sortText is respected.
+  if partial ~= "" then
+    items = common.fuzzy_match(items, partial)
+  end
+  suggestions = {}
+  local seen = {}
   local j = 1
   for i = 1, config.plugins.autocomplete.max_suggestions do
-    suggestions[i] = items[j]
-    while items[j] and items[i].text == items[j].text do
-      items[i].info = items[i].info or items[j].info
+    -- skip over duplicates that were already emitted
+    while j <= #items and seen[items[j].text] do
       j = j + 1
     end
+    if not items[j] then
+      break
+    end
+    suggestions[i] = items[j]
+    seen[suggestions[i].text] = true
+    -- merge extra info from duplicate entries (e.g. richer LSP detail).
+    -- After fuzzy matching duplicates are adjacent, so only scan the run.
+    local k = j + 1
+    while k <= #items and suggestions[i].text == items[k].text do
+      suggestions[i].info = suggestions[i].info or items[k].info
+      suggestions[i].desc = suggestions[i].desc or items[k].desc
+      k = k + 1
+    end
+    j = j + 1
   end
   suggestions_idx = 1
   suggestions_offset = 1
