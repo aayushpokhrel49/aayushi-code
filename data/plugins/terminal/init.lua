@@ -8,13 +8,7 @@ local View = require "core.view"
 local keymap = require "core.keymap"
 local StatusView = require "core.statusview"
 
-local terminal_native, native_err = pcall(require, "plugins.terminal.libterminal")
-if not terminal_native then
-  terminal_native = nil
-  if core.log_quiet then
-    core.log_quiet("Terminal native library not found: %s", native_err)
-  end
-end
+local terminal_native = require "plugins.terminal.libterminal"
 
 local default_shell
 if PLATFORM == "Windows" then
