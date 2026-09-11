@@ -54,42 +54,6 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
-  macos:
-    name: macOS (${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: x86_64
-            runner: macos-13
-          - arch: arm64
-            runner: macos-14
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install dependencies
-        run: brew install meson ninja cmake curl
-
-      - name: Build macOS app bundle
-        run: ./scripts/build.sh --bundle --forcefallback
-
-      - name: Package DMG
-        run: ./scripts/package-macos.sh --dmg
-
-      - name: Package ZIP
-        run: ./scripts/package-macos.sh
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-${{ matrix.arch }}
-          path: dist/*
-          if-no-files-found: error
-
   windows:
     name: Windows (x86_64)
     runs-on: windows-latest
@@ -137,7 +101,7 @@ jobs:
 
   publish:
     name: Publish release
-    needs: [linux, macos, windows]
+    needs: [linux, windows]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
