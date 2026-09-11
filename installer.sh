@@ -5,7 +5,7 @@
 set -e
 
 APP_NAME="aayushi-code"
-APP_VERSION="2.1.7"
+APP_VERSION="2.2.0"
 PREFIX="/usr"
 DESKTOP_FILE="com.aayushi.code.desktop"
 METAINFO_FILE="com.aayushi.code.metainfo.xml"

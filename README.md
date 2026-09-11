@@ -268,8 +268,8 @@ Two GitHub Actions workflows build and ship Aayushi Code automatically:
 To publish a release:
 
 ```sh
-git tag v2.1.7
-git push origin v2.1.7
+git tag v2.2.0
+git push origin v2.2.0
 ```
 
 ---

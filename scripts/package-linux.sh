@@ -18,8 +18,8 @@ fi
 source scripts/common.sh
 
 DIST_DIR="$(pwd -P)/dist"
-WORK_DIR="$DIST_DIR/work"
 BUILD_DIR="$(get_default_build_dir)"
+WORK_DIR="$BUILD_DIR/.package-work"
 PORTABLE_TREE="$BUILD_DIR/aayushi-code"
 VERSION="$(sed -n "s/^[[:space:]]*version : '\([^']*\)',/\1/p" meson.build | head -n 1)"
 [ -n "$VERSION" ] || VERSION="0.0.0"
