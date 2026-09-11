@@ -2,6 +2,7 @@ local core = require "core"
 local common = require "core.common"
 local style = require "core.style"
 local Node = require "core.node"
+local EmptyView = require "core.emptyview"
 local View = require "core.view"
 local DocView = require "core.docview"
 local ContextMenu = require "core.contextmenu"
@@ -407,7 +408,16 @@ function RootView:on_file_dropped(filename, x, y)
         },
         function(opt)
           if opt.text == "Current window" then
-            core.add_project(abspath)
+            if core.active_view:is(EmptyView) and #core.docs == 0 then
+              -- Home screen: opening a project here should take over the current
+              -- window (same as clicking a recent folder) instead of merely
+              -- registering it as a secondary project.
+              core.confirm_close_docs(core.docs, function(dirpath)
+                core.open_project(dirpath)
+              end, abspath)
+            else
+              core.add_project(abspath)
+            end
           elseif opt.text == "New window" then
             system.exec(string.format("%q %q", EXEFILE, filename))
           end

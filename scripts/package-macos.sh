@@ -36,7 +36,7 @@ if [ "$(get_platform_name)" != "darwin" ]; then
   exit 1
 fi
 
-if [ ! -d "$BUILD_DIR/Lite XL.app" ]; then
+if [ ! -d "$BUILD_DIR/Aayushi Code.app" ]; then
   echo "Building macOS app bundle..."
   ./scripts/build.sh --mode "$BUILD_TYPE" --bundle --builddir "$BUILD_DIR"
 fi
@@ -46,11 +46,7 @@ STAGE="$ROOT/dist/dmg-stage"
 rm -rf "$STAGE"
 mkdir -p "$STAGE"
 
-if [ -d "$BUILD_DIR/Aayushi Code.app" ]; then
-  cp -R "$BUILD_DIR/Aayushi Code.app" "$STAGE/$APP_NAME"
-else
-  cp -R "$BUILD_DIR/Lite XL.app" "$STAGE/$APP_NAME"
-fi
+cp -R "$BUILD_DIR/Aayushi Code.app" "$STAGE/$APP_NAME"
 
 if [ "$MAKE_DMG" = true ]; then
   echo "==> Creating DMG..."

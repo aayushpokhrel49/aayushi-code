@@ -1739,13 +1739,13 @@ function Settings:setup_about()
   local function open_link(link)
     local platform_filelauncher
     if PLATFORM == "Windows" then
-      platform_filelauncher = "start"
+      platform_filelauncher = "start \"\""
     elseif PLATFORM == "Mac OS X" then
       platform_filelauncher = "open"
     else
       platform_filelauncher = "xdg-open"
     end
-    system.exec(platform_filelauncher .. " " .. link)
+    system.exec(string.format("%s %q", platform_filelauncher, link))
   end
 
   ---@type widget.button

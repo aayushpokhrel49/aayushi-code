@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <windows.h>
+#include "../../utfconv.h"
 
 
 struct dirmonitor_internal {
@@ -53,7 +54,10 @@ int translate_changes_dirmonitor(struct dirmonitor_internal* monitor, char* buff
 
 int add_dirmonitor(struct dirmonitor_internal* monitor, const char* path) {
   close_monitor_handle(monitor);
-  monitor->handle = CreateFileA(path, FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  LPWSTR wpath = utfconv_utf8towc(path);
+  if (!wpath) return -1;
+  monitor->handle = CreateFileW(wpath, FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  SDL_free(wpath);
   return !monitor->handle || monitor->handle == INVALID_HANDLE_VALUE ? -1 : 1;
 }
 

@@ -8,10 +8,20 @@ local View = require "core.view"
 local keymap = require "core.keymap"
 local StatusView = require "core.statusview"
 
-local terminal_native = require "plugins.terminal.libterminal"
+local terminal_native, native_err = pcall(require, "plugins.terminal.libterminal")
+if not terminal_native then
+  terminal_native = nil
+  if core.log_quiet then
+    core.log_quiet("Terminal native library not found: %s", native_err)
+  end
+end
 
-
-local default_shell =  os.getenv("SHELL") or (PLATFORM == "Windows" and os.getenv("COMSPEC")) or (PLATFORM == "Windows" and "c:\\windows\\system32\\cmd.exe" or "sh")
+local default_shell
+if PLATFORM == "Windows" then
+  default_shell = os.getenv("COMSPEC") or "cmd.exe"
+else
+  default_shell = os.getenv("SHELL") or "sh"
+end
 local default_config = {
   -- outputs a terminal.log file of all the output of your shell
   debug = false,
@@ -31,7 +41,7 @@ local default_config = {
   -- the newline character to use
   -- We set ICRNL, so that this is translated to `\n` at input time... but this seems to be necessary. `micro`
   -- doesn't allow you to newline if you don't set it to `\r`.
-  newline = ((config.plugins.terminal.shell or default_shell):find("cmd.exe") and "\r\n" or "\r"),
+  newline = (default_shell:find("cmd.exe") and "\r\n" or "\r"),
   -- the backspace character to use
   backspace = "\x7F",
   -- the delete character to use
@@ -333,7 +343,6 @@ end
 
 local function increaseLuminance(bg, fg, ratio)
   local bgL = relativeLuminance(bg)
-  local cr = contrastRatio(relativeLuminance(fg), bgL)
   local nFg = { table.unpack(fg) }
   local cr = contrastRatio(relativeLuminance(nFg), bgL)
   while cr < ratio and (nFg[1] < 0xFF or nFg[2] < 0xFF or nFg[3] < 0xFF) do
@@ -551,6 +560,10 @@ end
 
 
 function TerminalView:spawn()
+  if not terminal_native then
+    core.error("Terminal not available: native terminal library missing (libterminal)")
+    return
+  end
   self.terminal = terminal_native.new(self.columns, self.lines, self.options.scrollback_limit, self.options.term, self.options.shell, self.options.arguments, self.options.debug)
   -- We make this weak so that any other method of closing the view gets caught up in the garbage collection and the coroutine doesn't count as a reference for gc purposes.
   local weak_table = { self = self }
@@ -917,6 +930,19 @@ function TerminalView:draw_debug(x, y, w, h)
 end
 
 function TerminalView:draw_terminal(hh)
+  if not terminal_native then
+    local y = self.position.y + hh
+    local msg = "Terminal unavailable: native library (libterminal) not found."
+    local sub = "Build libterminal for " .. (PLATFORM or "your platform") .. " or use a Lua-based terminal fallback."
+    local font = style.font
+    local tw = font:get_width(msg)
+    local sw = font:get_width(sub)
+    local cx = self.position.x + (self.size.x - tw) / 2
+    local cy = y + (self.size.y - hh) / 2 - font:get_height()
+    renderer.draw_text(font, msg, cx, cy, style.error or style.text)
+    renderer.draw_text(font, sub, self.position.x + (self.size.x - sw) / 2, cy + font:get_height() + 4 * SCALE, style.dim)
+    return
+  end
   if self.terminal then
     local cursor_x, cursor_y, mode = self.terminal:cursor()
     local space_width = self.options.font:get_width(" ")
@@ -1088,6 +1114,7 @@ function TerminalView:on_mouse_pressed(button, x, y, clicks)
   if button == "left" then
     local col, row = self:convert_coordinates(x, y)
     local inverted = config.plugins.terminal.inversion_key and keymap.modkeys[config.plugins.terminal.inversion_key]
+    if not self.terminal then return true end
     if not inverted and self.terminal:mouse_tracking_mode() == "x10" then
       self.terminal:input("\x1B[M" .. string.char(32) .. string.char(32 + col + 1) .. string.char(32 + row + 1) )
     elseif not inverted and self.terminal:mouse_tracking_mode() == "normal" then
@@ -1115,6 +1142,7 @@ function TerminalView:on_mouse_moved(x, y, dx, dy)
   local result = self.v_scrollbar:on_mouse_moved(x, y, dx, dy)
   if result then
     if result ~= true then
+      if not self.terminal then return true end
       local _, total_scrollback = self.terminal:scrollback()
       self.terminal:scrollback(math.floor((1.0 - result) * total_scrollback))
     end
@@ -1200,6 +1228,7 @@ function TerminalView:on_mouse_released(button, x, y)
     self.word_selecting = nil
     self.row_selecting = nil
     self.scrolling_offscreen = nil
+    if not self.terminal then return end
     local col, row = self:convert_coordinates(x, y)
     if self.terminal:mouse_tracking_mode() == "normal" then
       self.terminal:input("\x1B[M" .. string.char(32 + 3) .. string.char(32 + col + 1) .. string.char(32 + row + 1) )
@@ -1392,6 +1421,7 @@ end, {
       core.redraw = true
       return
     end
+    if not view.terminal then return end
     if view.terminal:mouse_tracking_mode() then
       local col, row = view:convert_coordinates(view.mouse_x, view.mouse_y)
       if view.terminal:mouse_tracking_mode() == "normal" then
@@ -1673,7 +1703,7 @@ local keys = {
   ["f9"] = "terminal:f9",
   ["f10"] = "terminal:f10",
   ["f11"] = "terminal:f11",
-  ["f12"] = "terminal:f11",
+  ["f12"] = "terminal:f12",
   ["escape"] = "terminal:escape",
   ["ctrl+a"] = "terminal:start-of-heading",
   ["ctrl+b"] = "terminal:start-of-text",

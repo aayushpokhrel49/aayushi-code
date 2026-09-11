@@ -4,6 +4,50 @@
 #include <SDL3/SDL.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <dwmapi.h>
+
+/* Applies the user's OS-wide dark mode preference to the native title bar.
+   Loaded at runtime so we don't need to link against dwmapi.lib explicitly. */
+static void apply_native_titlebar_theme(SDL_Window *window) {
+  HWND hwnd = (HWND) SDL_GetPointerProperty(
+    SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+  if (!hwnd) return;
+
+  int use_light = 1;
+  HKEY key;
+  DWORD size = sizeof(use_light);
+  if (RegOpenKeyExW(HKEY_CURRENT_USER,
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        0, KEY_READ, &key) == ERROR_SUCCESS) {
+    if (RegQueryValueExW(key, L"AppsUseLightTheme", NULL, NULL,
+          (LPBYTE) &use_light, &size) != ERROR_SUCCESS) {
+      use_light = 1;
+    }
+    RegCloseKey(key);
+  }
+
+  BOOL dark = !use_light;
+  typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND, DWORD, LPCVOID, DWORD);
+  HMODULE dwmapi = LoadLibraryW(L"dwmapi.dll");
+  if (dwmapi) {
+    DwmSetWindowAttribute_t pfn = (DwmSetWindowAttribute_t)
+      GetProcAddress(dwmapi, "DwmSetWindowAttribute");
+    if (pfn) {
+      /* DWMWA_USE_IMMERSIVE_DARK_MODE; fall back to the pre-1809 attribute id. */
+      if (FAILED(pfn(hwnd, 20, &dark, sizeof(dark))))
+        pfn(hwnd, 19, &dark, sizeof(dark));
+    }
+    FreeLibrary(dwmapi);
+  }
+}
+#else
+static void apply_native_titlebar_theme(SDL_Window *window) {
+  (void) window;
+}
+#endif
+
 static RenWindow *persistant_window = NULL;
 
 static void init_window_icon(SDL_Window *window) {
@@ -23,7 +67,7 @@ static int f_renwin_create(lua_State *L) {
   float height = luaL_optnumber(L, 3, 0);
 
   if (video_init() != 0)
-    return luaL_error(L, "Error creating lite-xl window: %s", SDL_GetError());
+    return luaL_error(L, "Error creating Aayushi Code window: %s", SDL_GetError());
 
   if (width < 1 || height < 1) {
     const SDL_DisplayMode* dm = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
@@ -41,9 +85,10 @@ static int f_renwin_create(lua_State *L) {
     SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN
   );
   if (!window) {
-    return luaL_error(L, "Error creating lite-xl window: %s", SDL_GetError());
+    return luaL_error(L, "Error creating Aayushi Code window: %s", SDL_GetError());
   }
   init_window_icon(window);
+  apply_native_titlebar_theme(window);
 
   RenWindow **window_renderer = (RenWindow**)lua_newuserdata(L, sizeof(RenWindow*));
   luaL_setmetatable(L, API_TYPE_RENWINDOW);

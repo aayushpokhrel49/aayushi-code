@@ -204,19 +204,13 @@ end
 function util.open_external(location)
   local filelauncher = ""
   if PLATFORM == "Windows" then
-    filelauncher = "start"
+    filelauncher = "start \"\""
   elseif PLATFORM == "Mac OS X" then
     filelauncher = "open"
   else
     filelauncher = "xdg-open"
   end
-
-  -- non-Windows platforms need the text quoted (%q)
-  if PLATFORM ~= "Windows" then
-    location = string.format("%q", location)
-  end
-
-  system.exec(filelauncher .. " " .. location)
+  system.exec(string.format("%s %q", filelauncher, location))
 end
 
 ---Prettify json output and logs it if config.lsp.log_file is set.

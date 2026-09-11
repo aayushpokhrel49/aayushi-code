@@ -33,7 +33,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-PORTABLE_TREE="$BUILD_DIR/lite-xl"
+PORTABLE_TREE="$BUILD_DIR/aayushi-code"
 if [ ! -x "$PORTABLE_TREE/aayushi-code" ] && [ ! -x "$PORTABLE_TREE/bin/aayushi-code" ]; then
   echo "Portable tree not found at $PORTABLE_TREE."
   echo "Build it first with: scripts/build.sh --portable"

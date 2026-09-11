@@ -29,7 +29,7 @@ local git_view = nil
 function M.git_cmd(args)
   local root = core.root_project()
   if not root then return "", 1 end
-  local proc = process.start({"git", "-C", root.path, unpack(args)})
+  local proc = process.start({"git", "-C", root.path, table.unpack(args)})
   if not proc then return "", 1 end
   local stdout = ""
   while proc:running() do

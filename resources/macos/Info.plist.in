@@ -36,8 +36,12 @@
 	<string>com.aayushi.code</string>
 	<key>CFBundleName</key>
 	<string>Aayushi Code</string>
+	<key>CFBundleDisplayName</key>
+	<string>Aayushi Code</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>LSMinimumSystemVersion</key>

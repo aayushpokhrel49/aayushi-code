@@ -1,18 +1,22 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <math.h>
 #include "renwindow.h"
 
 #ifdef LITE_USE_SDL_RENDERER
-static int query_surface_scale(RenWindow *ren) {
+static double query_surface_scale(RenWindow *ren) {
   int w_pixels, h_pixels;
   int w_points, h_points;
   SDL_GetWindowSizeInPixels(ren->window, &w_pixels, &h_pixels);
   SDL_GetWindowSize(ren->window, &w_points, &h_points);
-  /* We consider that the ratio pixel/point will always be an integer and
-     it is the same along the x and the y axis. */
-  assert(w_pixels % w_points == 0 && h_pixels % h_points == 0 && w_pixels / w_points == h_pixels / h_points);
-  return w_pixels / w_points;
+  /* The pixel/point ratio is usually an integer on retina displays, but can
+     be fractional (1.25, 1.5, etc.) on Windows with per-monitor scaling.
+     We average both axes and never assert, so fractional DPI works too. */
+  if (w_points <= 0 || h_points <= 0) return 1.0;
+  const double sx = (double) w_pixels / w_points;
+  const double sy = (double) h_pixels / h_points;
+  return (sx + sy) / 2.0;
 }
 
 static void setup_renderer(RenWindow *ren, int w, int h) {
@@ -55,8 +59,13 @@ void renwin_init_command_buf(RenWindow *ren) {
 }
 
 
-static RenRect scaled_rect(const RenRect rect, const int scale) {
-  return (RenRect) {rect.x * scale, rect.y * scale, rect.width * scale, rect.height * scale};
+static RenRect scaled_rect(const RenRect rect, const double scale) {
+  return (RenRect) {
+    (int) llround(rect.x * scale),
+    (int) llround(rect.y * scale),
+    (int) llround(rect.width * scale),
+    (int) llround(rect.height * scale)
+  };
 }
 
 
@@ -87,11 +96,12 @@ RenSurface renwin_get_surface(RenWindow *ren) {
 
 void renwin_resize_surface(RenWindow *ren) {
 #ifdef LITE_USE_SDL_RENDERER
-  int new_w, new_h, new_scale;
+  int new_w, new_h;
+  double new_scale;
   SDL_GetWindowSizeInPixels(ren->window, &new_w, &new_h);
   new_scale = query_surface_scale(ren);
   /* Note that (w, h) may differ from (new_w, new_h) on retina displays. */
-  if (new_scale != ren->rensurface.scale ||
+  if (fabs(new_scale - ren->rensurface.scale) > 0.001 ||
       new_w != ren->rensurface.surface->w ||
       new_h != ren->rensurface.surface->h) {
     renwin_init_surface(ren);
@@ -117,11 +127,11 @@ void renwin_show_window(RenWindow *ren) {
 
 void renwin_update_rects(RenWindow *ren, RenRect *rects, int count) {
 #ifdef LITE_USE_SDL_RENDERER
-  const int scale = ren->rensurface.scale;
+  const double scale = ren->rensurface.scale;
   for (int i = 0; i < count; i++) {
     const RenRect *r = &rects[i];
-    const int x = scale * r->x, y = scale * r->y;
-    const int w = scale * r->width, h = scale * r->height;
+    const int x = (int) llround(scale * r->x), y = (int) llround(scale * r->y);
+    const int w = (int) llround(scale * r->width), h = (int) llround(scale * r->height);
     const SDL_Rect sr = {.x = x, .y = y, .w = w, .h = h};
     uint8_t *pixels = ((uint8_t *) ren->rensurface.surface->pixels) + y * ren->rensurface.surface->pitch + x * SDL_BYTESPERPIXEL(ren->rensurface.surface->format);
     SDL_UpdateTexture(ren->texture, &sr, pixels, ren->rensurface.surface->pitch);

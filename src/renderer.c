@@ -116,7 +116,7 @@ typedef struct RenFont {
   CharMap charmap;
   GlyphMap glyphs;
 #ifdef LITE_USE_SDL_RENDERER
-  int scale;
+  double scale;
 #endif
   float size, space_advance;
   unsigned short baseline, height, tab_size;
@@ -130,7 +130,7 @@ typedef struct RenFont {
 #ifdef LITE_USE_SDL_RENDERER
 void update_font_scale(RenWindow *window_renderer, RenFont **fonts) {
   if (window_renderer == NULL) return;
-  const int surface_scale = renwin_get_surface(window_renderer).scale;
+  const double surface_scale = renwin_get_surface(window_renderer).scale;
   for (int i = 0; i < FONT_FALLBACK_MAX && fonts[i]; ++i) {
     if (fonts[i]->scale != surface_scale) {
       ren_font_group_set_size(fonts, fonts[0]->size, surface_scale);
@@ -537,7 +537,7 @@ float ren_font_group_get_size(RenFont **fonts) {
   return fonts[0]->size;
 }
 
-void ren_font_group_set_size(RenFont **fonts, float size, int surface_scale) {
+void ren_font_group_set_size(RenFont **fonts, float size, double surface_scale) {
   for (int i = 0; i < FONT_FALLBACK_MAX && fonts[i]; ++i) {
     font_clear_glyph_cache(fonts[i]);
     fonts[i]->size = size;
@@ -628,7 +628,7 @@ double ren_draw_text(RenSurface *rs, RenFont **fonts, const char *text, size_t l
   SDL_Rect clip;
   SDL_GetSurfaceClipRect(surface, &clip);
 
-  const int surface_scale = rs->scale;
+  const double surface_scale = rs->scale;
   double pen_x = x * surface_scale;
   double original_pen_x = pen_x;
   y *= surface_scale;
@@ -736,7 +736,7 @@ void ren_draw_rect(RenSurface *rs, RenRect rect, RenColor color) {
   if (color.a == 0) { return; }
 
   SDL_Surface *surface = rs->surface;
-  const int surface_scale = rs->scale;
+  const double surface_scale = rs->scale;
 
   SDL_Rect dest_rect = { rect.x * surface_scale,
                          rect.y * surface_scale,

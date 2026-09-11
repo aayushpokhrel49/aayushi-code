@@ -29,7 +29,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-PORTABLE_TREE="$BUILD_DIR/lite-xl"
+PORTABLE_TREE="$BUILD_DIR/aayushi-code"
 if [ ! -x "$PORTABLE_TREE/aayushi-code$(get_executable_extension)" ]; then
   echo "Building portable tree..."
   ./scripts/build.sh --mode "$BUILD_TYPE" --portable --builddir "$BUILD_DIR"
@@ -38,7 +38,7 @@ fi
 mkdir -p dist
 echo "==> Creating Windows archive..."
 if command -v zip >/dev/null 2>&1; then
-  (cd "$BUILD_DIR" && zip -qr "$ARCHIVE" lite-xl)
+  (cd "$BUILD_DIR" && zip -qr "$ARCHIVE" aayushi-code)
 else
   case "$(get_platform_name)" in
     windows)

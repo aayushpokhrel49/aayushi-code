@@ -6,7 +6,7 @@
 #   ./scripts/package-linux.sh [deb] [rpm] [arch] [tar] [appimage]
 #   (no arguments = build every packager available on this machine)
 #
-# Requires a built portable tree (default: build-x86_64-linux/lite-xl),
+# Requires a built portable tree (default: build-x86_64-linux/aayushi-code),
 # which scripts/build.sh --portable produces. Artifacts land in dist/.
 set -e
 
@@ -20,7 +20,7 @@ source scripts/common.sh
 DIST_DIR="$(pwd -P)/dist"
 WORK_DIR="$DIST_DIR/work"
 BUILD_DIR="$(get_default_build_dir)"
-PORTABLE_TREE="$BUILD_DIR/lite-xl"
+PORTABLE_TREE="$BUILD_DIR/aayushi-code"
 VERSION="$(sed -n "s/^[[:space:]]*version : '\([^']*\)',/\1/p" meson.build | head -n 1)"
 [ -n "$VERSION" ] || VERSION="0.0.0"
 ARCH="$(get_platform_arch)"
@@ -88,7 +88,7 @@ stage_system_tree() {
 make_tarball() {
   echo "==> Creating portable tarball..."
   mkdir -p "$DIST_DIR"
-  tar -C "$BUILD_DIR/lite-xl" --exclude=share --exclude=bin -czf \
+  tar -C "$BUILD_DIR/aayushi-code" --exclude=share --exclude=bin -czf \
     "$DIST_DIR/aayushi-code-$VERSION-$ARCH-linux-portable.tar.gz" \
     aayushi-code data doc
 }

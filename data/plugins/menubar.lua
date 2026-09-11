@@ -10,10 +10,36 @@ local View = require "core.view"
 local RootView = require "core.rootview"
 
 config.plugins.menubar = config.plugins.menubar or {}
+config.plugins.menubar.auto_save = config.plugins.menubar.auto_save ~= false
+config.plugins.menubar.auto_save_interval = config.plugins.menubar.auto_save_interval or 1.0
 
 local DIVIDER = {}
-local auto_save = false
+local auto_save = config.plugins.menubar.auto_save
 local auto_save_thread = nil
+
+
+local function start_auto_save()
+  if auto_save and not auto_save_thread then
+    auto_save_thread = core.add_thread(function()
+      while true do
+        coroutine.yield(config.plugins.menubar.auto_save_interval or 1.0)
+        if auto_save then
+          local count = 0
+          for _, doc in ipairs(core.docs) do
+            if doc.abs_filename and doc:is_dirty() then
+              local ok, err = pcall(doc.save, doc)
+              if not ok then core.error("Auto save failed: %s", err) else count = count + 1 end
+            end
+          end
+          if count > 0 and core.status_view then
+            core.status_view:show_message("", style.accent or { 120, 180, 255, 255 },
+              string.format("Auto saved %d file%s", count, count == 1 and "" or "s"))
+          end
+        end
+      end
+    end)
+  end
+end
 
 local bar_hover_bg = { common.color "rgba(255, 255, 255, 0.09)" }
 local border_color = style.scrollbar or style.divider
@@ -67,7 +93,7 @@ local MENUS = {
     name = "File",
     items = {
       { text = "New File", command = "core:new-doc" },
-      { text = "New Window", action = not_implemented("New Window") },
+      { text = "New Window", command = "menubar:new-window" },
       DIVIDER,
       { text = "Open File...", command = "core:open-file" },
       { text = "Open Folder...", command = "core:open-project-folder" },
@@ -254,7 +280,15 @@ local MENUS = {
       { text = "Show All Commands", command = "core:find-command" },
       DIVIDER,
       { text = "Documentation", action = function()
-        system.exec(string.format("xdg-open %q", "https://lite-xl.github.io/"))
+        local launcher = ""
+        if PLATFORM == "Windows" then
+          launcher = "start \"\" %q"
+        elseif PLATFORM == "Mac OS X" then
+          launcher = "open %q"
+        else
+          launcher = "xdg-open %q"
+        end
+        system.exec(string.format(launcher, "https://lite-xl.com/"))
       end },
       { text = "About Aayushi Code", command = "ui:settings" },
     },
@@ -713,24 +747,24 @@ command.add(nil, {
     end
   end,
 
+  ["menubar:new-window"] = function()
+    -- Open a fresh instance, copying the current project when a real folder is open.
+    local cmd = EXEFILE
+    if #core.projects > 0 and not core.empty_project then
+      cmd = string.format("%q %q", EXEFILE, core.projects[1].path)
+    end
+    system.exec(cmd)
+  end,
+
   ["menubar:toggle-auto-save"] = function()
     auto_save = not auto_save
-    if auto_save and not auto_save_thread then
-      auto_save_thread = core.add_thread(function()
-        while true do
-          coroutine.yield(1.0)
-          if auto_save then
-            for _, doc in ipairs(core.docs) do
-              if doc.abs_filename and doc:is_dirty() then
-                local ok, err = pcall(doc.save, doc)
-                if not ok then core.error("Auto save failed: %s", err) end
-              end
-            end
-          end
-        end
-      end)
+    config.plugins.menubar.auto_save = auto_save
+    start_auto_save()
+    if auto_save then
+      core.log("Auto Save enabled (every %gs)", config.plugins.menubar.auto_save_interval or 1.0)
+    else
+      core.log("Auto Save disabled")
     end
-    core.log("Auto Save %s", auto_save and "enabled" or "disabled")
   end,
 
   ["menubar:toggle-menubar"] = function()
@@ -807,4 +841,9 @@ local old_root_draw = RootView.draw
 function RootView:draw()
   old_root_draw(self)
   menu_bar:draw_dropdown()
+end
+
+
+if config.plugins.menubar.enabled ~= false then
+  start_auto_save()
 end

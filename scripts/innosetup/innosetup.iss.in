@@ -86,7 +86,7 @@ Name: "portablemode"; Description: "Extract only, do not install"; Flags: unchec
 Name: "envPath"; Description: "Add Aayushi Code to PATH"; Flags: unchecked
 
 [Files]
-Source: "{#BuildDir}/lite-xl/*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+Source: "{#BuildDir}/aayushi-code/*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

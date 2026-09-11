@@ -68,7 +68,7 @@ main() {
   local reconfigure
   local lpm_path
   local should_reconfigure
-  local destdir="lite-xl"
+  local destdir="aayushi-code"
 
   for i in "$@"; do
     case $i in
@@ -117,7 +117,7 @@ main() {
           echo "Warning: ignoring --bundle option, works only under macOS."
         else
           bundle="-Dbundle=true"
-          destdir="Lite XL.app"
+          destdir="Aayushi Code.app"
         fi
         shift
         ;;
@@ -278,7 +278,7 @@ main() {
 
   if [[ $pgo != "" ]]; then
     cp -r data "${build_dir}/src"
-    "${build_dir}/src/lite-xl"
+    "${build_dir}/src/aayushi-code"
     meson configure -Db_pgo=use "${build_dir}"
     meson compile -C "${build_dir}"
     rm -fr "${build_dir}/src/data"

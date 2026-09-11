@@ -17,6 +17,8 @@ else
 end
 USERDIR = (system.get_file_info(EXEDIR .. PATHSEP .. 'user') and (EXEDIR .. PATHSEP .. 'user'))
        or os.getenv("LITE_USERDIR")
+       or (PLATFORM == "Windows" and ((os.getenv("APPDATA") or HOME) .. PATHSEP .. "aayushi-code"))
+       or (PLATFORM == "Mac OS X" and (HOME .. PATHSEP .. 'Library' .. PATHSEP .. 'Application Support' .. PATHSEP .. 'aayushi-code'))
        or ((os.getenv("XDG_CONFIG_HOME") and os.getenv("XDG_CONFIG_HOME") .. PATHSEP .. "aayushi-code"))
        or (HOME and (HOME .. PATHSEP .. '.config' .. PATHSEP .. 'aayushi-code'))
 
@@ -45,6 +47,7 @@ end }
 
 table.pack = table.pack or pack or function(...) return {...} end
 table.unpack = table.unpack or unpack
+unpack = unpack or table.unpack
 
 local lua_require = require
 local require_stack = { "" }

@@ -55,7 +55,7 @@ case "$MSYSTEM" in
     ;;
 esac
 
-if [ ! -x "$BUILD_DIR/lite-xl/aayushi-code$(get_executable_extension)" ]; then
+if [ ! -x "$BUILD_DIR/aayushi-code/aayushi-code$(get_executable_extension)" ]; then
   echo "Building portable tree..."
   scripts/build.sh --portable --builddir "$BUILD_DIR"
 fi
