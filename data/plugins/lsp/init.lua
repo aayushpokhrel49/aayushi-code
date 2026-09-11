@@ -200,6 +200,90 @@ lsp.servers = {}
 ---@type table<string, lsp.server>
 lsp.servers_running = {}
 
+--
+-- Lazy language server loading
+--
+-- Language-specific LSP plugins (lsp_c, lsp_lua, lsp_python, lsp_rust,
+-- lsp_typescript, lsp_web) are only loaded when a file matching their
+-- language is actually opened, instead of registering every server at
+-- startup. Each lazy plugin registers its server via `lspconfig.X.setup`
+-- which calls `lsp.add_server`, so requiring it on demand is enough for
+-- `lsp.start_server` to pick it up.
+--
+
+---@type table<string,string[]|string>
+local lazy_plugin_patterns = {
+  lsp_c = { "%.c$", "%.h$", "%.inl$", "%.cpp$", "%.hpp$", "%.cc$", "%.C$", "%.cxx$", "%.c%+%+$", "%.hh$", "%.H$", "%.hxx$", "%.h%+%+$", "%.objc$", "%.objcpp$" },
+  lsp_lua = "%.lua$",
+  lsp_python = "%.py$",
+  lsp_rust = "%.rs$",
+  lsp_typescript = { "%.jsx?$", "%.[cm]js$", "%.tsx?$" },
+  lsp_web = { "%.html$", "%.css$", "%.less$", "%.sass$", "%.json$", "%.jsonc$" },
+}
+
+---@type table<string,boolean> plugins already loaded (or explicitly disabled/replaced)
+local lazy_loaded = {}
+-- Disable lazy LSP plugins by default so they aren't registered at startup.
+-- If the user explicitly configured one (with a table of options or `true`),
+-- it keeps its setting and loads eagerly; if it was set to `false` it is
+-- never loaded even on demand.
+for plugin_name, _ in pairs(lazy_plugin_patterns) do
+  local value = config.plugins[plugin_name]
+  if value == nil then
+    config.plugins[plugin_name] = false
+  else
+    lazy_loaded[plugin_name] = true
+  end
+end
+
+---Register the applicable server for a file that is about to be served.
+---@param filename string
+local function lazy_load_server_for(filename)
+  if not filename then return end
+  for plugin_name, patterns in pairs(lazy_plugin_patterns) do
+    if not lazy_loaded[plugin_name] and common.match_pattern(filename, patterns) then
+      lazy_loaded[plugin_name] = true
+      core.log_quiet("[LSP] lazily loading plugin %s", plugin_name)
+      local ok, err = pcall(require, "plugins." .. plugin_name)
+      if not ok then
+        core.error("[LSP] failed to lazily load plugin %s: %s", plugin_name, err)
+      end
+    end
+  end
+end
+
+---Scan a project directory for source files so matching LSP plugins are
+---loaded when a folder is opened instead of waiting for an individual file.
+---@param dir string
+---@param depth? number
+local function lazy_load_project_dir(dir, depth)
+  if depth == nil then depth = 0 end
+  if depth > 3 or not dir then return end
+  local entries = system.list_dir(dir)
+  if not entries then return end
+  for _, entry in ipairs(entries) do
+    if not entry:find("^%.") then
+      local full = dir .. PATHSEP .. entry
+      local info = system.get_file_info(full)
+      if info and info.type == "dir" then
+        lazy_load_project_dir(full, depth + 1)
+      elseif info and info.type == "file" then
+        lazy_load_server_for(entry)
+      end
+    end
+  end
+end
+
+-- Scan the project directory once at startup to load language servers for
+-- file types that are present in the folder, even if no file has been
+-- opened yet. Runs as a deferred thread to avoid blocking startup.
+core.add_thread(function()
+  coroutine.yield()
+  if core.project_dir then
+    lazy_load_project_dir(core.project_dir)
+  end
+end)
+
 ---Flag that indicates if last autocomplete request was a trigger
 ---to prevent requesting another autocompletion request until the
 ---autocomplete box is hidden since some lsp servers loose context
@@ -760,6 +844,7 @@ end
 --- @param filename string
 --- @param project_directory string
 function lsp.start_server(filename, project_directory)
+  lazy_load_server_for(filename)
   for name, server in pairs(lsp.servers) do
     if common.match_pattern(filename, server.file_patterns) then
       if not lsp.servers_running[name] then
