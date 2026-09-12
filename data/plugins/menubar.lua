@@ -92,21 +92,13 @@ local MENUS = {
   {
     name = "File",
     items = {
-      { text = "New File", command = "core:new-doc" },
+      { text = "New File", command = "core:new-file" },
+      { text = "New Folder", command = "core:new-folder" },
       { text = "New Window", command = "menubar:new-window" },
       DIVIDER,
       { text = "Open File...", command = "core:open-file" },
       { text = "Open Folder...", command = "core:open-project-folder" },
       { text = "Open Recent", items = recent_menu },
-      DIVIDER,
-      { text = "Save", command = "doc:save" },
-      { text = "Save As...", command = "doc:save-as" },
-      { text = "Save All", command = "menubar:save-all" },
-      {
-        text = "Auto Save",
-        command = "menubar:toggle-auto-save",
-        checked = function() return auto_save end,
-      },
       DIVIDER,
       {
         text = "Preferences",

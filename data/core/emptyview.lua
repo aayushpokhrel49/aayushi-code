@@ -40,7 +40,7 @@ local WHITE = { 255, 255, 255, 120 }
 -- Action cards are static; build once at module scope to avoid per-frame
 -- allocations in draw().
 local ACTIONS = {
-  { id = "new_file",    glyph = "+", color = C.badge_new,   title = "New File",           desc = "Create an empty untitled document",     cmd = "core:new-doc" },
+  { id = "new_file",    glyph = "+", color = C.badge_new,   title = "New File",           desc = "Create a new file and give it a name", cmd = "core:new-file" },
   { id = "open_file",   glyph = "F", color = C.badge_file,  title = "Open File...",        desc = "Open a file using system file manager", cmd = "core:open-file-picker" },
   { id = "open_folder", glyph = "D", color = C.badge_folder,title = "Open Folder...",      desc = "Open a project folder",                 cmd = "core:open-project-folder-picker", icon_font = true },
   { id = "clone_repo",  glyph = "G", color = C.badge_git,   title = "Clone Repository...", desc = "Clone a Git repository from URL",      cmd = "core:clone-repository" },

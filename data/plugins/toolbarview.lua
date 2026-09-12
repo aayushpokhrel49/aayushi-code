@@ -6,6 +6,49 @@ local style = require "core.style"
 local keymap = require "core.keymap"
 local View = require "core.view"
 
+local function create_in_project(kind)
+  local project = core.root_project()
+  if not project then
+    core.error("No project folder open")
+    return
+  end
+  local is_file = kind == "file"
+  local label = is_file and "Filename" or "Folder Name"
+  core.command_view:enter(label, {
+    text = project:normalize_path(project.path) .. PATHSEP,
+    submit = function(relpath)
+      relpath = relpath:gsub("^%s+", ""):gsub("%s+$", "")
+      if relpath == "" or relpath == "." .. PATHSEP then return end
+      local abs_filename = project:absolute_path(relpath)
+      if is_file then
+        local file, err = io.open(abs_filename, "a+")
+        if not file then
+          core.error("Error: unable to create file in %q: %s", abs_filename, err)
+          return
+        end
+        file:close()
+        core.root_view:open_doc(core.open_doc(abs_filename))
+        core.log("Created %s", abs_filename)
+      else
+        local ok, err, where = common.mkdirp(abs_filename)
+        if not ok then
+          core.error("Error: unable to create folder %q: %s", where, err)
+          return
+        end
+        core.log("Created %s", abs_filename)
+      end
+    end,
+    suggest = function(text)
+      return common.path_suggest(text, project.path)
+    end
+  })
+end
+
+command.add(nil, {
+  ["core:new-file"] = function() create_in_project("file") end,
+  ["core:new-folder"] = function() create_in_project("folder") end,
+})
+
 local ToolbarView = View:extend()
 
 function ToolbarView:__tostring() return "ToolbarView" end
@@ -17,9 +60,8 @@ function ToolbarView:new()
   self.tooltip = false
   self.toolbar_font = style.icon_big_font
   self.toolbar_commands = {
-    {symbol = "f", command = "core:new-doc"},
-    {symbol = "D", command = "core:open-file"},
-    {symbol = "S", command = "doc:save"},
+    {symbol = "f", command = "core:new-file"},
+    {symbol = "D", command = "core:new-folder"},
     {symbol = "L", command = "core:find-file"},
     {symbol = "B", command = "core:find-command"},
     {symbol = "P", command = "core:open-user-module"},
