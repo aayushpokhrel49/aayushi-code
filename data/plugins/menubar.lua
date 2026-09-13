@@ -163,7 +163,7 @@ local MENUS = {
       { text = "Explorer", command = "treeview:toggle" },
       { text = "Search", command = "project-search:find" },
       { text = "Source Control", command = "git:toggle-panel" },
-      { text = "Run", action = not_implemented("Run") },
+      { text = "Run", command = "runner:run", shortcut = "Ctrl+F5" },
       { text = "Extensions", action = not_implemented("Extensions") },
       DIVIDER,
       {
@@ -215,11 +215,11 @@ local MENUS = {
   {
     name = "Run",
     items = {
-      { text = "Run Without Debugging", action = not_implemented("Run Without Debugging") },
-      { text = "Start Debugging", action = not_implemented("Start Debugging") },
-      { text = "Stop", action = not_implemented("Stop") },
+      { text = "Run Without Debugging", command = "runner:run", shortcut = "Ctrl+F5" },
+      { text = "Start Debugging", command = "runner:debug", shortcut = "F5" },
+      { text = "Stop", command = "runner:stop", shortcut = "Shift+F5" },
       DIVIDER,
-      { text = "Add Configuration...", action = not_implemented("Add Configuration") },
+      { text = "Add Configuration...", command = "runner:add-task" },
       DIVIDER,
       { text = "Restart", command = "core:restart" },
     },
@@ -231,8 +231,8 @@ local MENUS = {
       { text = "Toggle Terminal Panel", command = "terminal:toggle-drawer" },
       { text = "Terminal: Swap Drawer", command = "terminal:swap-drawer", shortcut = "Alt+T" },
       DIVIDER,
-      { text = "Run Task...", action = not_implemented("Run Task") },
-      { text = "Configure Tasks...", action = not_implemented("Configure Tasks") },
+      { text = "Run Task...", command = "runner:run-task" },
+      { text = "Configure Tasks...", command = "runner:configure-tasks" },
     },
   },
   {
